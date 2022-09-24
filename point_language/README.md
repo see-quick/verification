@@ -12,7 +12,7 @@ possible.
 Therefore, we define our very first language based on sub-set of 2D geometrics. 
 State in such language represents point in 2D region (e.g., (1, 2) is instance of point where x equals to 1 and y equals to 02).
 Graphically:
-```aidl
+```shell
          y ^
           2|    (p)
            |
@@ -37,7 +37,7 @@ We define following language by context-free grammar:
 Example of program could be for instance:
 
 1. Example
-```aidl
+```shell
 init([0, 2] x [0, 2])
 rotation(0, 0, 180°)
 iter {
@@ -45,7 +45,7 @@ iter {
 }
 ```
 2. Example
-```aidl
+```shell
 init([0, 2] x [0, 2])
 iter {
     {
