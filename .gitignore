@@ -1,1 +1,7 @@
 .idea
+out
+
+# OCaml addtional files
+*.cmi
+*.cmo
+*.exe
