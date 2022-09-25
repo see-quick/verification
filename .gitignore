@@ -3,6 +3,7 @@ out
 
 # Binary files
 bin
+*.out
 
 # OCaml addtional files
 *.cmo

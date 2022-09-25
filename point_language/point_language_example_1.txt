@@ -1,0 +1,5 @@
+init([0, 2] x [0, 2])
+rotation(0, 0, 180°)
+iter {
+    translation(0, 1)
+}
