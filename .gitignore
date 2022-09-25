@@ -1,7 +1,9 @@
 .idea
 out
 
+# Binary files
+*.o
+
 # OCaml addtional files
-*.cmi
 *.cmo
 *.exe
