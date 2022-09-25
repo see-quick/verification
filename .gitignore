@@ -2,8 +2,8 @@
 out
 
 # Binary files
-*.o
+bin
 
 # OCaml addtional files
 *.cmo
-*.exe
+*.cmi
