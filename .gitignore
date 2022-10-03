@@ -2,7 +2,7 @@
 out
 
 # Binary files
-bin
+formal_verification/abstract_interpretation/bin
 *.out
 
 # OCaml addtional files
