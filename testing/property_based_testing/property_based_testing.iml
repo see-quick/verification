@@ -6,13 +6,13 @@
     </option>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
-    <output url="file://$MODULE_DIR$/target/classes" />
-    <output-test url="file://$MODULE_DIR$/target/test-classes" />
-    <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/target" />
+    <output url="file://$MODULE_DIR$/../testing/property_based_testing/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../testing/property_based_testing/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../testing/property_based_testing">
+      <sourceFolder url="file://$MODULE_DIR$/../testing/property_based_testing/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../testing/property_based_testing/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../testing/property_based_testing/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/../testing/property_based_testing/target" />
     </content>
     <orderEntry type="jdk" jdkName="11" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
