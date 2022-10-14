@@ -7,10 +7,15 @@ TL;DR
 
 ```mermaid
 flowchart LR
-    A[Hard] -->|Text| B(Round)
-    B --> C{Decision}
-    C -->|One| D[Result 1]
-    C -->|Two| E[Result 2]
+X[Design Model from program code]
+X --> B(Formal property using temporal logic)
+X --> L(Formal Model in e.g., TLA+)
+B(Formal property using temporal logic) --> M
+L --> M
+M[Model checker e.g., TLC] --> N{exhaustive state exploration}
+N --> Y[Pproperty is satisfied]
+N --> Q[Property is not satisfied and we have specific error path i.e., counterexample]
+N --> P[Out of memory or timeout]
 ```
 
 # Formal specification language
