@@ -22,3 +22,7 @@ N --> P[Out of memory or timeout]
 
 One of the formal specification languages is **TLA+**. 
 You could find additional information in these links ([lamport-tla](https://lamport.azurewebsites.net/tla/tla.html), [learn-tla](https://learntla.com/)).
+
+## References
+
+Everything can be found [here](https://github.com/Apress/practical-tla-plus).
