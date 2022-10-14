@@ -8,3 +8,7 @@ formal_verification/abstract_interpretation/bin
 # OCaml addtional files
 *.cmo
 *.cmi
+
+# TLA+ files
+*.launch
+wire.toolbox
