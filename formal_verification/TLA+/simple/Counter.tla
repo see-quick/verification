@@ -1,15 +1,13 @@
--------------- MODULE Stack --------------
-EXTENDS Naturals, Sequences
+-------------- MODULE Counter --------------
+EXTENDS Naturals
 
-VARIABLES stack
+VARIABLES counter
 
-Init == stack = << >>
+Init == counter = 0
 
-Push(x) == stack' = Append(stack, x)
+Increment == counter' = counter + 1
+Decrement == counter' = counter - 1
 
-Pop == /\ Len(stack) > 0
-       /\ stack' = SubSeq(stack, 1, Len(stack) - 1)
+Next == Increment \/ Decrement
 
-Next == \E x \in 1..10: Push(x) \/ Pop
-
-=========================================
+===========================================
