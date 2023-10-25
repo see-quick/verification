@@ -28,6 +28,7 @@ EnterCriticalSection(p) ==
 (* Action for a process to exit the critical section *)
 ExitCriticalSection(p) ==
     /\ state[p] = "critical"
+\*    /\ FALSE  \* (If we add this line, the TLC will reach deadlock)
     /\ state' = [state EXCEPT ![p] = "noncritical"]
     /\ inCriticalSection' = {}
 

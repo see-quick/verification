@@ -12,3 +12,5 @@ formal_verification/abstract_interpretation/bin
 # TLA+ files
 *.launch
 wire.toolbox
+*.bin
+states
