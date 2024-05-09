@@ -56,22 +56,30 @@ ValidTransitions(state) ==
   [] state = "LEADING_ALL_PREFERRED" -> {}
 
 \* Observe the state of a node and non-deterministically transition to a new state
-\* The "UNKNOWN" state is excluded from valid transitions
 ObserveNode(n) ==
-  /\ nodeState[n].state /= "UNKNOWN"
   /\ LET validStates == ValidTransitions(nodeState[n].state)
      IN nodeState' = [nodeState EXCEPT ![n].state = CHOOSE s \in validStates : TRUE]
   /\ UNCHANGED <<activeController, restartingNodes, reconfiguringNodes>>
 
 \* Restart a node if it hasn't exceeded the maximum restart attempts
 RestartNode(n) ==
-  /\ nodeState[n].restartAttempts < MaxRestartAttempts
-  /\ "RESTARTED" \in ValidTransitions(nodeState[n].state)
-  /\ nodeState' = [nodeState EXCEPT
-       ![n].state = "RESTARTED",
-       ![n].restartAttempts = nodeState[n].restartAttempts + 1]
-  /\ restartingNodes' = restartingNodes \union {n}
-  /\ UNCHANGED <<activeController, reconfiguringNodes>>
+  LET
+    controllerNodes == {m \in Nodes : "controller" \in nodeState[m].roles}
+    restartingControllers == {m \in restartingNodes : "controller" \in nodeState[m].roles}
+    activeControllers == {m \in controllerNodes : m \notin restartingControllers}
+    operationalControllers == Cardinality(activeControllers)
+    requiredOperational == (Cardinality(controllerNodes) \div 2) + 1
+  IN
+    /\ n \in Nodes \* Only applicable to nodes that are part of the system
+    /\ nodeState[n].restartAttempts < MaxRestartAttempts
+    /\ "RESTARTED" \in ValidTransitions(nodeState[n].state)
+    /\ operationalControllers > requiredOperational \* Ensure quorum is not breached
+    /\ nodeState' = [nodeState EXCEPT
+         ![n].state = "RESTARTED",
+         ![n].restartAttempts = nodeState[n].restartAttempts + 1]
+    /\ restartingNodes' = restartingNodes \union {n}
+    /\ UNCHANGED <<activeController, reconfiguringNodes>>
+
 
 \* Reconfigure a node if it is in the "SERVING" state
 ReconfigureNode(n) ==

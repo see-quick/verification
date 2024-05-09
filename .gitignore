@@ -14,3 +14,5 @@ formal_verification/abstract_interpretation/bin
 wire.toolbox
 *.bin
 states
+# TLA+ files generating graphs
+*.dot
