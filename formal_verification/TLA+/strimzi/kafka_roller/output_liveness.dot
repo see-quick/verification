@@ -1,0 +1,10 @@
+digraph DiskGraph {
+nodesep=0.35;
+subgraph cluster_graph {
+color="white";
+"-6996156591811796063.1" [style = filled] [label="/\\ activeController = \"controller-0\"\n/\\ nodeState = ( \"controller-0\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"controller\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"controller-1\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"controller\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"broker-2\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"broker\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"broker-3\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"broker\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"broker-4\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"broker\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] )\n/\\ reconfiguringNodes = {}\n/\\ restartingNodes = {}
+#-6996156591811796063.1#"]
+"3546755615334939003.1" [style = filled] [label="/\\ activeController = \"controller-1\"\n/\\ nodeState = ( \"controller-0\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"controller\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"controller-1\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"controller\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"broker-2\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"broker\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"broker-3\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"broker\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] @@\n  \"broker-4\" :>\n      [ state |-> \"UNKNOWN\",\n        roles |-> {\"broker\"},\n        restartAttempts |-> 0,\n        retries |-> 0 ] )\n/\\ reconfiguringNodes = {}\n/\\ restartingNodes = {}
+#3546755615334939003.1#"]
+}
+}
