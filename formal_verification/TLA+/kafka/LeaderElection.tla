@@ -8,6 +8,7 @@ CONSTANTS Brokers,  \* Set of all brokers, e.g., {Broker1, Broker2, Broker3}
 VARIABLES leader,  \* Current leader for the partition
          availableBrokers  \* Set of currently available brokers
 
+
 Init ==
     \* Initially, any broker can be the leader
     /\ leader \in Brokers
