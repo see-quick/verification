@@ -16,3 +16,4 @@ wire.toolbox
 states
 # TLA+ files generating graphs
 *.dot
+*.dump

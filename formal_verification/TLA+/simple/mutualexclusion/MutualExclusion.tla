@@ -1,47 +1,48 @@
-------------------------- MODULE MutualExclusion -------------------------
+---------------------------- MODULE MutualExclusion ----------------------------
 
-EXTENDS Naturals, FiniteSets
+EXTENDS TLC, Integers
 
-CONSTANTS ProcSet
+CONSTANTS PROCESSES
 
-(* State Variables *)
-VARIABLES state, inCriticalSection
+VARIABLES state, pc
 
-(* Initial state: No process is in the critical section *)
-Init ==
-    /\ state = [p \in ProcSet |-> "noncritical"]
-    /\ inCriticalSection = {}
+(* --definition of the initial state *)
+Init == 
+    /\ state = [p \in PROCESSES |-> "idle"]
+    /\ pc = [p \in PROCESSES |-> "try"]
 
-(* Action for a process to try to enter the critical section *)
-TryEnterCriticalSection(p) ==
-    /\ state[p] = "noncritical"
-    /\ state' = [state EXCEPT ![p] = "trying"]
-    /\ inCriticalSection' = inCriticalSection
+(* --definition of the process model *)
+Try(p) ==
+    /\ pc[p] = "try"
+    /\ state[p] = "idle"
+    /\ state' = [state EXCEPT ![p] = "waiting"]
+    /\ pc' = [pc EXCEPT ![p] = "critical"]
 
-(* Action for a process to enter the critical section *)
-EnterCriticalSection(p) ==
-    /\ state[p] = "trying"
-    /\ inCriticalSection = {}
-    /\ state' = [state EXCEPT ![p] = "critical"]
-    /\ inCriticalSection' = {p}
+Critical(p) ==
+    /\ pc[p] = "critical"
+    /\ state[p] = "waiting"
+    /\ state' = [state EXCEPT ![p] = "using"]
+    /\ pc' = [pc EXCEPT ![p] = "release"]
 
-(* Action for a process to exit the critical section *)
-ExitCriticalSection(p) ==
-    /\ state[p] = "critical"
-\*    /\ FALSE  \* (If we add this line, the TLC will reach deadlock)
-    /\ state' = [state EXCEPT ![p] = "noncritical"]
-    /\ inCriticalSection' = {}
+Release(p) ==
+    /\ pc[p] = "release"
+    /\ state[p] = "using"
+    /\ state' = [state EXCEPT ![p] = "idle"]
+    /\ pc' = [pc EXCEPT ![p] = "try"]
 
-(* Define the next state in terms of possible actions *)
-Next ==
-    \/ \E p \in ProcSet: TryEnterCriticalSection(p)
-    \/ \E p \in ProcSet: EnterCriticalSection(p)
-    \/ \E p \in ProcSet: ExitCriticalSection(p)
+(* --definition of the next-state relation *)
+Next == 
+    \/ \E p \in PROCESSES : Try(p)
+    \/ \E p \in PROCESSES : Critical(p)
+    \/ \E p \in PROCESSES : Release(p)
 
-Spec == Init /\ [][Next]_<<state, inCriticalSection>>
+(* --definition of the safety property *)
+MutualExclusion == 
+    \A p1, p2 \in PROCESSES : 
+        (p1 /= p2) => ~(state[p1] = "using" /\ state[p2] = "using")
 
-(* Safety property: At most one process is in the critical section *)
-Safety ==
-    Cardinality(inCriticalSection) <= 1
+(* --definition of the temporal properties *)
+Spec == 
+    Init /\ [][Next]_<<state, pc>> /\ WF_<<state, pc>>(Next)
 
 =============================================================================
