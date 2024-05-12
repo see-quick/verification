@@ -1,4 +1,4 @@
------------------------------- MODULE ProducerConsumerQueue ------------------------------
+------------------------------ MODULE ProducerConsumerWithoutWeakFairness ------------------------------
 
 EXTENDS Integers, Sequences
 
@@ -35,19 +35,28 @@ Next ==
     \/ Produce
     \/ Consume
 
-(* --fainess conditions *)
-Fairness ==
-    /\ WF_<<queue, prodEnabled, consEnabled>>(Produce)  \* Weak fairness for Produce
-    /\ WF_<<queue, prodEnabled, consEnabled>>(Consume)  \* Weak fairness for Consume
-
-(* --specification *)
+(* --specification without weak fairness *)
 Spec ==
     /\ Init
     /\ [][Next]_<<queue, prodEnabled, consEnabled>>
-    /\ Fairness
 
 (* --correctness properties *)
 Prop1 ==
     Len(queue) <= MaxLen
+
+\* LIVENESS property
+\*  If there is ever a point after which the consumer is always enabled and 
+\*  there are items in the queue, then it must be the case that eventually 
+\*  the consumer always has the opportunity to consume infinitely often.
+StarvationFreeConsumer ==
+    []<>(consEnabled /\ Len(queue) > 0) =>
+    []<>(\E x \in 0..MaxLen: consEnabled /\ Len(queue) = x => <>(Len(queue) < x))
+
+\* eventually, there is a stabilization or reduction in the queue length that is sustained.
+CheckLivelock ==
+    <>[](\E n \in 0..MaxLen: Len(queue) <= n)
+
+
+
 
 ====================================================================================
