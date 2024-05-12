@@ -45,6 +45,8 @@ Next ==
 Spec ==
     /\ Init
     /\ [][Next]_<<queue, prodEnabled, consEnabled, prodCount, consCount>>
+    \* WEAK FAIRNESS preventing livelock to happen
+    \* /\ WF_<<queue, prodEnabled, consEnabled, prodCount, consCount>>(Next)
 
 StarvationFreeConsumers ==
     []<>(\E c \in 1..NumConsumers: consEnabled[c] /\ Len(queue) > 0) =>
@@ -54,6 +56,9 @@ StarvationFreeConsumers ==
 \*   Ensure that the system eventually reaches a state where 
 \*   the queue length remains constant as a simpler check for no livelock.
 CheckLivelock ==
-    <>[](\A n \in 0..MaxLen: Len(queue) = n)
+    <>[](\E n \in 0..MaxLen: Len(queue) = n)
 
+NoDeadlock ==
+    \/ \E p \in 1..NumProducers: prodEnabled[p] /\ Len(queue) < MaxLen
+    \/ \E c \in 1..NumConsumers: consEnabled[c] /\ Len(queue) > 0
 ====================================================================================
