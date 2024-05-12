@@ -14,7 +14,7 @@ Nodes == ControllerNodes \union BrokerNodes \union CombinedNodes
 
 VARIABLES
   nodeState,               \* The state of each node
-  activeController,        \* The node that is currently the active controller
+  activeController,        \* The node that is currently the active controller (the quorum leader)
   restartingNodes,         \* The set of nodes currently undergoing a restart
   reconfiguringNodes       \* The set of nodes currently being reconfigured
 
@@ -115,7 +115,7 @@ Next ==
   \/ \E n \in Nodes : ReconfigureNode(n)
   \/ \E n \in Nodes : NodeServing(n)
   \/ \E n \in Nodes : RetryNode(n)
-
+  
 \* The system specification
 Spec == Init /\ [][Next]_vars
 
@@ -139,7 +139,6 @@ ControllerQuorumMaintained ==
   LET controllerNodes == {n \in Nodes : "controller" \in nodeState[n].roles}
   IN Cardinality(controllerNodes \ restartingNodes) >= (Cardinality(controllerNodes) \div 2) + 1
 
-
 (* Properties to check *)
 
 \* All nodes should eventually reach the "SERVING" or "LEADING_ALL_PREFERRED" state
@@ -151,7 +150,6 @@ AllNodesServing ==
 \* This helps identify issues where nodes are unable to fully recover
 NodesNotStuckRecovering ==
   \A n \in Nodes : nodeState[n].state = "RECOVERING" ~> nodeState[n].state /= "RECOVERING"
-
 
 \* Assert that the invariants hold throughout the system execution
 Invariants ==
