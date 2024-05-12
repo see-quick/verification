@@ -51,7 +51,9 @@ StarvationFreeConsumers ==
     []<>(\E c \in 1..NumConsumers: consEnabled[c] /\ Len(queue) > 0 => 
         <>(\E x \in 0..MaxLen: consEnabled[c] /\ Len(queue) = x => <>(Len(queue) < x)))
 
+\*   Ensure that the system eventually reaches a state where 
+\*   the queue length remains constant as a simpler check for no livelock.
 CheckLivelock ==
-    <>[](\E n \in 0..MaxLen: Len(queue) = n)
+    <>[](\A n \in 0..MaxLen: Len(queue) = n)
 
 ====================================================================================
