@@ -1,0 +1,5 @@
+// Example 2: Function definition
+function sayHello() {
+  var message = "Hello, Unicorn!"🦄
+  return message🦄
+}

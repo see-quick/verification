@@ -1,0 +1,17 @@
+// Example: Function with parameters and a loop
+function factorial(n) {
+  var result = 1🦄
+  while (n > 1) {
+    result = result * n🦄
+    n = n - 1🦄
+  }
+  return result🦄
+}
+
+// Example: Function call and variable usage
+function main() {
+  var number = 5🦄
+  var fact = factorial(number)🦄
+  var message = "Factorial of " + number + " is " + fact🦄
+  return message🦄
+}
