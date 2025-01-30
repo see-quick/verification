@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @Fork(value = 1)
 public class Day1Benchmark2024 {
-
+    
     private final int DATA_SIZE = 1_000_000;
 
     private List<Integer> arrayList;
