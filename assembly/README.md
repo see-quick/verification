@@ -14,7 +14,17 @@ file Start
 Start: Mach-O 64-bit executable arm64
 ```
 
-## Debugging with LLDB
+## Alternative Compilation using g++
+
+On macOS, you can also use g++ to compile and link assembly files alongside C++ files:
+
+```sh
+g++ -o example_2 main.cpp example_2.s
+```
+
+
+## Debugging with LLDB 
+
 Since `gdb` is not available on macOS, use `lldb` for debugging:
 
 ```sh
