@@ -3,16 +3,16 @@
 .data
 
 title:      .asciz  "GOSH I did it!!!"
-hwStr:      .asciz  "ManifiK! something string will be printed on stdout!!!!\n"
+hwStr:      .asciz  "ManifiK! something string will be printed on stdout!!!!"
 saveLR:     .dword  0       // Save LR here.
-            
+         
             .text
             
             .align  2       // Code must be 4-byte aligned
 getTitle:
             lea     x0, title
             ret
-            
+
 asmMain:
             lea     x0, saveLR
             str     lr, [x0]
