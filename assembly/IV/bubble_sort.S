@@ -20,10 +20,10 @@ fmtStr:     .asciz      "Sortme[%d] = %d\n"
 // sortMe - A 16-element array to sort:
 
 sortMe:
-            .word   1, 2, 16, 14
-            .word   3, 9, 4,  10
-            .word   5, 7, 15, 12
-            .word   8, 6, 11, 13
+    .word 65534, 65533, 65532, 65531, 65530, 65529, 65528, 65527, 65526, 65525
+    .rept 65525
+        .word 65534 - (. - sortMe) / 4
+    .endr
 sortSize    =       (. - sortMe) / 4    //Number of elements
 
 // Holds the array element during printing:
