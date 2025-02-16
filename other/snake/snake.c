@@ -110,7 +110,7 @@ int main() {
     }
 
     // Check for self-collision or wall collision
-    if (snakeX[0] < 0 || snakeX[0] >= WIDTH || snakeY[0] < 0 || snakeY[0] >= HEIGHT) {
+    if (snakeX[0] < 0 || snakeX[0] >= WIDTH - 1 || snakeY[0] < 0 || snakeY[0] >= HEIGHT - 1) {
         break;  // End game if hitting wall
     }
 
