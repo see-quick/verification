@@ -1,4 +1,5 @@
 #include <curses.h>
+#include <locale.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
@@ -11,14 +12,26 @@
 
 void draw_walls() {
     for (int x = 0; x <= WIDTH; x++) {
-        mvaddch(0, x, '#');           // Top wall
-        mvaddch(HEIGHT, x, '#');      // Bottom wall
+        mvprintw(0, x, "#");           // Top wall
+        mvprintw(HEIGHT, x, "#");      // Bottom wall
     }
     for (int y = 0; y <= HEIGHT; y++) {
-        mvaddch(y, 0, '#');           // Left wall
-        mvaddch(y, WIDTH, '#');       // Right wall
+        mvprintw(y, 0, "#");           // Left wall
+        mvprintw(y, WIDTH, "#");       // Right wall
     }
 }
+
+
+//void draw_walls() {
+//    for (int x = 0; x <= WIDTH; x++) {
+//        mvaddch(0, x, '#');           // Top wall
+// mvaddch(HEIGHT, x, '#');      // Bottom wall
+//    }
+//    for (int y = 0; y <= HEIGHT; y++) {
+//        mvaddch(y, 0, '#');           // Left wall
+//        mvaddch(y, WIDTH, '#');       // Right wall
+//    }
+//}
 
 void generate_food(int* foodX, int* foodY, int snakeX[], int snakeY[], int snakeLength) {
     while (1) {
@@ -50,6 +63,8 @@ int check_collision(int snakeX[], int snakeY[], int snakeLength) {
 
 
 int main() {
+  setlocale(LC_ALL, "");  // Enable Unicode rendering
+
   WINDOW* win = initscr();
 
   // Initialize SDL and SDL_mixer
@@ -138,10 +153,10 @@ int main() {
     mvaddstr(foodY, foodX, "x");
     
     for (int i = 0; i < snakeLength; i++) {
-      mvaddstr(snakeY[i], snakeX[i], "*");
+      mvaddstr(snakeY[i], snakeX[i], "■");
     }
 
-    refresh();
+    //refresh();
     usleep(100000);
   }
   
