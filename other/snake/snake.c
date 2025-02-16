@@ -37,6 +37,18 @@ void generate_food(int* foodX, int* foodY, int snakeX[], int snakeY[], int snake
     }
 }
 
+int check_collision(int snakeX[], int snakeY[], int snakeLength) {
+    // Check if the snake head collides with its body
+    for (int i = 1; i < snakeLength; i++) {
+        if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i]) {
+            printf("Colision...\n");
+            return 1; // Collision detected
+        }
+    }
+    return 0;
+}
+
+
 int main() {
   WINDOW* win = initscr();
 
@@ -110,16 +122,15 @@ int main() {
     }
 
     // Check for self-collision or wall collision
-    if (snakeX[0] < 0 || snakeX[0] >= WIDTH - 1 || snakeY[0] < 0 || snakeY[0] >= HEIGHT - 1) {
+    if (snakeX[0] <= 0 || snakeX[0] >= WIDTH || snakeY[0] <= 0 || snakeY[0] >= HEIGHT) {
+        printf("Wall colision\n");
         break;  // End game if hitting wall
     }
-
-
-    for (int i = 1; i < snakeLength; i++) {
-      if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i]) {
-          break;
-      }
-    }
+    
+    // Check for self-collision
+    if (check_collision(snakeX, snakeY, snakeLength)) {
+       break; // End game if the snake collides with itself
+    }    
   
     erase();
     draw_walls();
