@@ -21,18 +21,6 @@ void draw_walls() {
     }
 }
 
-
-//void draw_walls() {
-//    for (int x = 0; x <= WIDTH; x++) {
-//        mvaddch(0, x, '#');           // Top wall
-// mvaddch(HEIGHT, x, '#');      // Bottom wall
-//    }
-//    for (int y = 0; y <= HEIGHT; y++) {
-//        mvaddch(y, 0, '#');           // Left wall
-//        mvaddch(y, WIDTH, '#');       // Right wall
-//    }
-//}
-
 void generate_food(int* foodX, int* foodY, int snakeX[], int snakeY[], int snakeLength) {
     while (1) {
         *foodX = (rand() % (WIDTH - 2)) + 1;  // Avoid spawning on walls
