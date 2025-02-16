@@ -12,6 +12,7 @@
 #define SCOREBOARD_HEIGHT 1  // Scoreboard row height
 
 void draw_walls() {
+    attron(COLOR_PAIR(2));
     for (int x = 0; x <= WIDTH; x++) {
         mvprintw(SCOREBOARD_HEIGHT, x, "#");           // Top wall (below scoreboard)
         mvprintw(HEIGHT + SCOREBOARD_HEIGHT, x, "#");  // Bottom wall
@@ -20,6 +21,7 @@ void draw_walls() {
         mvprintw(y, 0, "#");           // Left wall
         mvprintw(y, WIDTH, "#");       // Right wall
     }
+    attroff(COLOR_PAIR(2));
 }
 
 void generate_food(int* foodX, int* foodY, int snakeX[], int snakeY[], int snakeLength) {
@@ -74,6 +76,11 @@ int main() {
     Mix_PlayMusic(bgMusic, -1);
 
     WINDOW* win = initscr();
+    start_color();
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);  // Snake body
+    init_pair(2, COLOR_RED, COLOR_BLACK);    // Snake head
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK); // Walls
+    init_pair(4, COLOR_CYAN, COLOR_BLACK);   // Food
     keypad(win, true);
     nodelay(win, true);
     curs_set(0);
@@ -118,17 +125,29 @@ int main() {
         erase();
         draw_scoreboard(snakeLength - 1);  // Display score
         draw_walls();
+
+        attron(COLOR_PAIR(4));
         mvaddstr(foodY, foodX, "x");
+        attroff(COLOR_PAIR(4));
 
         for (int i = 0; i < snakeLength; i++) {
+            if (i == 0) {
+                attron(COLOR_PAIR(2));
+            } else {
+                attron(COLOR_PAIR(1));
+            }
             mvaddstr(snakeY[i], snakeX[i], "■");
+            if (i == 0) {
+                attroff(COLOR_PAIR(2));
+            } else {
+                attroff(COLOR_PAIR(1));
+            }
         }
 
         refresh();
         usleep(100000);
     }
 
-    
     mvaddstr(HEIGHT / 2, WIDTH / 2 - 10, "Game over you suck... :D!");
     refresh();
     sleep(2);
