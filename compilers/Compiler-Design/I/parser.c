@@ -152,25 +152,40 @@ static void syntaxError(const char *msg) {
     exit(EXIT_FAILURE);
 }
 
-
 //--------------------------------------------------------------------
-// Minimal code generation & printing
-//--------------------------------------------------------------------
-// We only handle: function returning a constant
+// Minimal code emission
+// We only handle: function returning a single integer
+// Format, with platform adjustments:
 //
-// Pseudo-assembly:
 //    .section .text
-//    .globl <functionName>
-// <functionName>:
+//    .globl <functionName>     (or _<functionName> on macOS)
+// <functionName>:              (or _<functionName>: on macOS)
 //    movl $<gReturnValue>, %eax
 //    ret
+//
+// Linux: we also append: .section .note.GNU-stack,"",@progbits
 //--------------------------------------------------------------------
 static void generateAssembly(void) {
+    // Print the usual .text section
     printf(".section .text\n");
+
+#ifdef __APPLE__
+    // macOS => underscore in function label
+    printf(".globl _%s\n", gFunctionName);
+    printf("_%s:\n", gFunctionName);
+#else
+    // Linux => no underscore, but we also need .note.GNU-stack at the end
     printf(".globl %s\n", gFunctionName);
     printf("%s:\n", gFunctionName);
+#endif
+
     printf("    movl $%d, %%eax\n", gReturnValue);
     printf("    ret\n");
+
+#ifndef __APPLE__
+    // Linux => add the note.GNU-stack line
+    printf(".section .note.GNU-stack,\"\",@progbits\n");
+#endif
 }
 
 /**
@@ -208,10 +223,8 @@ int main(int argc, char **argv) {
 
     // Run the parser
     parse();
-
-    printf("Parsed successfully!\n");
     
-    // Now generate and print the assembly
+    // Emit final assembly
     generateAssembly();
 
     return 0;
