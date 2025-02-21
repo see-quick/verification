@@ -27,6 +27,12 @@ static void parseExp(void);
 static void syntaxError(const char *msg);
 static void advanceToken(void);
 
+//--------------------------------------------------------------------
+// Minimal "C AST" info to pass to codegen
+//--------------------------------------------------------------------
+static char gFunctionName[128] = "main"; // default
+static int gReturnValue = 0;             // default
+
 /**
  * parse()
  * Entry point for the parser: parse <program> = <function>
@@ -60,6 +66,11 @@ static void parseFunction(void) {
     if (currentToken.type != TOKEN_ID) {
         syntaxError("Expected function name (identifier)");
     }
+    
+    // Store the function name for codegen
+    strncpy(gFunctionName, currentToken.value, sizeof(gFunctionName) - 1);
+    gFunctionName[sizeof(gFunctionName)-1] = '\0';
+
     advanceToken();
 
     // Expect '('
@@ -120,6 +131,8 @@ static void parseStatement(void) {
  */
 static void parseExp(void) {
     if (currentToken.type == TOKEN_INT) {
+        // Convert the integer token's value to an int
+        gReturnValue = atoi(currentToken.value);
         advanceToken();
     } else {
         syntaxError("Expected integer literal in expression");
@@ -137,6 +150,27 @@ static void advanceToken(void) {
 static void syntaxError(const char *msg) {
     fprintf(stderr, "Syntax Error: %s\n", msg);
     exit(EXIT_FAILURE);
+}
+
+
+//--------------------------------------------------------------------
+// Minimal code generation & printing
+//--------------------------------------------------------------------
+// We only handle: function returning a constant
+//
+// Pseudo-assembly:
+//    .section .text
+//    .globl <functionName>
+// <functionName>:
+//    movl $<gReturnValue>, %eax
+//    ret
+//--------------------------------------------------------------------
+static void generateAssembly(void) {
+    printf(".section .text\n");
+    printf(".globl %s\n", gFunctionName);
+    printf("%s:\n", gFunctionName);
+    printf("    movl $%d, %%eax\n", gReturnValue);
+    printf("    ret\n");
 }
 
 /**
@@ -176,5 +210,9 @@ int main(int argc, char **argv) {
     parse();
 
     printf("Parsed successfully!\n");
+    
+    // Now generate and print the assembly
+    generateAssembly();
+
     return 0;
 }
