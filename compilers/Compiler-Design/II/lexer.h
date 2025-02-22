@@ -15,24 +15,26 @@
 
 // Token types
 typedef enum {
-    TOKEN_EOF,       // End of file
-    TOKEN_INT,       // Integer number
-    TOKEN_ID,        // Identifier
-    TOKEN_KEYWORD,   // Keyword (int, void, return, etc.)
-    TOKEN_OPERATOR,  // Operators: + - * / =
-    TOKEN_DECREMENT, // -- (decrement operator)
-    TOKEN_SEMICOLON, // ;
-    TOKEN_LPAREN,    // (
-    TOKEN_RPAREN,    // )
-    TOKEN_LBRACE,    // {
-    TOKEN_RBRACE,    // }
-    TOKEN_ERROR      // Invalid token
+  TOKEN_EOF,      // End of file
+  TOKEN_INT,      // Integer number
+  TOKEN_ID,       // Identifier
+  TOKEN_KEYWORD,  // Keyword (int, void, return, etc.)
+  TOKEN_OPERATOR, // Operators: + - * / =
+  TOKEN_MINUS,
+  TOKEN_TILDE,
+  TOKEN_DECREMENT, // -- (decrement operator)
+  TOKEN_SEMICOLON, // ;
+  TOKEN_LPAREN,    // (
+  TOKEN_RPAREN,    // )
+  TOKEN_LBRACE,    // {
+  TOKEN_RBRACE,    // }
+  TOKEN_ERROR      // Invalid token
 } TokenType;
 
 // Token structure
 typedef struct {
-    TokenType type;
-    char value[MAX_TOKEN_LENGTH];
+  TokenType type;
+  char value[MAX_TOKEN_LENGTH];
 } Token;
 
 /**
@@ -45,7 +47,7 @@ void read_input(FILE *file);
 
 /**
  * Retrieves the next token from the internal buffer.
- * 
+ *
  * @return The next Token.
  */
 Token get_token(void);

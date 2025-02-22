@@ -4,18 +4,18 @@
  *   <program>   ::= <function>
  *   <function>  ::= "int" <identifier> "(" "void" ")" "{" <statement> "}"
  *   <statement> ::= "return" <exp> ";"
- *   <exp>       ::= <int>
+ *   <exp>       ::= <int> | <unary_operator> <exp> | "(" <exp> ")"
+ *   <unary_operator> ::= "~" | "-"
  *
  * Author: Maros Orsak
- * Created: 2025-02-21
+ * Created: 2025-02-22
  * Description: A simple parser that uses the lexer to parse a minimal grammar.
  */
 
-#include <stdlib.h>
+#include "lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lexer.h"
 
 // We'll store the "current token" globally for simplicity
 static Token currentToken;
@@ -39,118 +39,137 @@ static int gReturnValue = 0;             // default
  * Entry point for the parser: parse <program> = <function>
  */
 void parse(void) {
-    advanceToken();   // Load the first token
-    parseProgram();
-    if (currentToken.type != TOKEN_EOF) {
-        syntaxError("Extra stuff after the valid program");
-    }
+  advanceToken(); // Load the first token
+  parseProgram();
+  if (currentToken.type != TOKEN_EOF) {
+    syntaxError("Extra stuff after the valid program");
+  }
 }
 
 /**
  * <program> ::= <function>
  */
-static void parseProgram(void) {
-    parseFunction();
-}
+static void parseProgram(void) { parseFunction(); }
 
 /**
  * <function> ::= "int" <identifier> "(" "void" ")" "{" <statement> "}"
  */
 static void parseFunction(void) {
-    // Expect 'int'
-    if (currentToken.type != TOKEN_KEYWORD || strcmp(currentToken.value, "int") != 0) {
-        syntaxError("Expected 'int' keyword at start of function");
-    }
-    advanceToken();
+  // Expect 'int'
+  if (currentToken.type != TOKEN_KEYWORD ||
+      strcmp(currentToken.value, "int") != 0) {
+    syntaxError("Expected 'int' keyword at start of function");
+  }
+  advanceToken();
 
-    // Expect identifier
-    if (currentToken.type != TOKEN_ID) {
-        syntaxError("Expected function name (identifier)");
-    }
-    
-    // Store the function name for codegen
-    strncpy(gFunctionName, currentToken.value, sizeof(gFunctionName) - 1);
-    gFunctionName[sizeof(gFunctionName)-1] = '\0';
+  // Expect identifier
+  if (currentToken.type != TOKEN_ID) {
+    syntaxError("Expected function name (identifier)");
+  }
 
-    advanceToken();
+  // Store the function name for codegen
+  strncpy(gFunctionName, currentToken.value, sizeof(gFunctionName) - 1);
+  gFunctionName[sizeof(gFunctionName) - 1] = '\0';
 
-    // Expect '('
-    if (currentToken.type != TOKEN_LPAREN) {
-        syntaxError("Expected '(' after function name");
-    }
-    advanceToken();
+  advanceToken();
 
-    // Expect 'void'
-    if (currentToken.type != TOKEN_KEYWORD || strcmp(currentToken.value, "void") != 0) {
-        syntaxError("Expected 'void' in parameter list");
-    }
-    advanceToken();
+  // Expect '('
+  if (currentToken.type != TOKEN_LPAREN) {
+    syntaxError("Expected '(' after function name");
+  }
+  advanceToken();
 
-    // Expect ')'
-    if (currentToken.type != TOKEN_RPAREN) {
-        syntaxError("Expected ')' after 'void'");
-    }
-    advanceToken();
+  // Expect 'void'
+  if (currentToken.type != TOKEN_KEYWORD ||
+      strcmp(currentToken.value, "void") != 0) {
+    syntaxError("Expected 'void' in parameter list");
+  }
+  advanceToken();
 
-    // Expect '{'
-    if (currentToken.type != TOKEN_LBRACE) {
-        syntaxError("Expected '{' before function body");
-    }
-    advanceToken();
+  // Expect ')'
+  if (currentToken.type != TOKEN_RPAREN) {
+    syntaxError("Expected ')' after 'void'");
+  }
+  advanceToken();
 
-    // parse <statement>
-    parseStatement();
+  // Expect '{'
+  if (currentToken.type != TOKEN_LBRACE) {
+    syntaxError("Expected '{' before function body");
+  }
+  advanceToken();
 
-    // Expect '}'
-    if (currentToken.type != TOKEN_RBRACE) {
-        syntaxError("Expected '}' after statement");
-    }
-    advanceToken();
+  // parse <statement>
+  parseStatement();
+
+  // Expect '}'
+  if (currentToken.type != TOKEN_RBRACE) {
+    syntaxError("Expected '}' after statement");
+  }
+  advanceToken();
 }
 
 /**
  * <statement> ::= "return" <exp> ";"
  */
 static void parseStatement(void) {
-    if (currentToken.type != TOKEN_KEYWORD || strcmp(currentToken.value, "return") != 0) {
-        syntaxError("Expected 'return' statement");
-    }
-    advanceToken();
+  if (currentToken.type != TOKEN_KEYWORD ||
+      strcmp(currentToken.value, "return") != 0) {
+    syntaxError("Expected 'return' statement");
+  }
+  advanceToken();
 
-    // parse <exp>
-    parseExp();
+  // parse <exp>
+  parseExp();
 
-    // Expect ';'
-    if (currentToken.type != TOKEN_SEMICOLON) {
-        syntaxError("Expected ';' after return expression");
-    }
-    advanceToken();
+  // Expect ';'
+  if (currentToken.type != TOKEN_SEMICOLON) {
+    syntaxError("Expected ';' after return expression");
+  }
+  advanceToken();
 }
 
 /**
- * <exp> ::= <int>
+ * <exp> ::= <int> | <unary_operator> <expr>
+ * <unary_operator> :: = "~" | "-"
+ *
  */
 static void parseExp(void) {
-    if (currentToken.type == TOKEN_INT) {
-        // Convert the integer token's value to an int
-        gReturnValue = atoi(currentToken.value);
-        advanceToken();
-    } else {
-        syntaxError("Expected integer literal in expression");
+  if (currentToken.type == TOKEN_LPAREN) {
+    advanceToken();
+    parseExp();
+    if (currentToken.type != TOKEN_RPAREN) {
+      syntaxError("Expected ')' after expression");
     }
+    advanceToken(); // consume ')'
+  } else if (currentToken.type == TOKEN_MINUS || currentToken.type == TOKEN_TILDE) {
+    TokenType unaryOp = currentToken.type;
+    advanceToken();
+
+    parseExp();
+
+    if (unaryOp == TOKEN_MINUS) {
+      gReturnValue = -gReturnValue;
+    } else if (unaryOp == TOKEN_TILDE) {
+      gReturnValue = ~gReturnValue;
+    }
+  } else if (currentToken.type == TOKEN_INT) {
+    // Convert the integer token's value to an int
+    gReturnValue = atoi(currentToken.value);
+    advanceToken();
+  } else {
+    syntaxError("Expected integer literal or unary expression in <exp>");
+  }
 }
 
 //--------------------------------------
 // Support functions
 //--------------------------------------
 
-static void advanceToken(void) {
-    currentToken = get_token();
-}
+static void advanceToken(void) { currentToken = get_token(); }
 
 static void syntaxError(const char *msg) {
-    fprintf(stderr, "Syntax Error: %s\n", msg);
-    exit(EXIT_FAILURE);
+  fprintf(stderr, "Syntax Error: %s\n", msg);
+  exit(EXIT_FAILURE);
 }
 
 //--------------------------------------------------------------------
@@ -167,25 +186,25 @@ static void syntaxError(const char *msg) {
 // Linux: we also append: .section .note.GNU-stack,"",@progbits
 //--------------------------------------------------------------------
 static void generateAssembly(void) {
-    // Print the usual .text section
-    printf(".section .text\n");
+  // Print the usual .text section
+  printf(".section .text\n");
 
 #ifdef __APPLE__
-    // macOS => underscore in function label
-    printf(".globl _%s\n", gFunctionName);
-    printf("_%s:\n", gFunctionName);
+  // macOS => underscore in function label
+  printf(".globl _%s\n", gFunctionName);
+  printf("_%s:\n", gFunctionName);
 #else
-    // Linux => no underscore, but we also need .note.GNU-stack at the end
-    printf(".globl %s\n", gFunctionName);
-    printf("%s:\n", gFunctionName);
+  // Linux => no underscore, but we also need .note.GNU-stack at the end
+  printf(".globl %s\n", gFunctionName);
+  printf("%s:\n", gFunctionName);
 #endif
 
-    printf("    movl $%d, %%eax\n", gReturnValue);
-    printf("    ret\n");
+  printf("    movl $%d, %%eax\n", gReturnValue);
+  printf("    ret\n");
 
 #ifndef __APPLE__
-    // Linux => add the note.GNU-stack line
-    printf(".section .note.GNU-stack,\"\",@progbits\n");
+  // Linux => add the note.GNU-stack line
+  printf(".section .note.GNU-stack,\"\",@progbits\n");
 #endif
 }
 
@@ -197,36 +216,36 @@ static void generateAssembly(void) {
  * 4. If no errors, print "Parsed successfully!"
  */
 int main(int argc, char **argv) {
-    const char *filename = NULL;
+  const char *filename = NULL;
 
-    // Find a .c file among the arguments
-    for (int i = 1; i < argc; i++) {
-        if (strstr(argv[i], ".c")) {
-            filename = argv[i];
-        }
-        // Potentially handle other flags here if needed
+  // Find a .c file among the arguments
+  for (int i = 1; i < argc; i++) {
+    if (strstr(argv[i], ".c")) {
+      filename = argv[i];
     }
+    // Potentially handle other flags here if needed
+  }
 
-    if (!filename) {
-        fprintf(stderr, "No .c file provided.\n");
-        return EXIT_FAILURE;
-    }
+  if (!filename) {
+    fprintf(stderr, "No .c file provided.\n");
+    return EXIT_FAILURE;
+  }
 
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        perror("Error opening file");
-        return EXIT_FAILURE;
-    }
+  FILE *file = fopen(filename, "r");
+  if (!file) {
+    perror("Error opening file");
+    return EXIT_FAILURE;
+  }
 
-    // Let the lexer read everything in
-    read_input(file);
-    fclose(file);
+  // Let the lexer read everything in
+  read_input(file);
+  fclose(file);
 
-    // Run the parser
-    parse();
-    
-    // Emit final assembly
-    generateAssembly();
+  // Run the parser
+  parse();
 
-    return 0;
+  // Emit final assembly
+  generateAssembly();
+
+  return 0;
 }
