@@ -25,6 +25,7 @@ The `compilers` directory contains work related to programming languages and com
 
 - **O-language**: A simple imperative language with integer and boolean support, focusing on arithmetic operations and loops.
 - **Unicorn-language**: A Java-like language that replaces semicolons (`;`) with `🦄`, built with ANTLR.
+- **C-compiler**: A custom-designed C compiler, structured similarly to `clang`/`gcc`, with lexical analysis, parsing, and code generation.
 
 ### Assembly
 
@@ -44,10 +45,6 @@ The `testing` directory is focused on software testing methodologies:
 ### Other
 
 The `other` directory contains miscellaneous projects and experiments.
-
-### Output
-
-The `out` directory is used for generated or compiled outputs.
 
 ## Resources
 
