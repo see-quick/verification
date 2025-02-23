@@ -244,14 +244,13 @@ int main(int argc, char **argv) {
     // 1) Convert TACKY -> assembly with pseudo-registers
     AsmInstrList *alist = tacky_to_asm(tacky_instructions);
   
-
     // try ASM
     finalize_asm(&alist);
 
+    emit_asm_function("main", alist);
+    // epilogiue...of ASM
+    printf(".section .note.GNU-stack,\"\",@progbits\n");  
 
-    // 2) Print out assembly instructions
-    print_asm_list(alist);
-  
 
     // TODO: free memory here... :) 
   }

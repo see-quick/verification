@@ -263,3 +263,73 @@ void finalize_asm(AsmInstrList **alist) {
     fix_memory_to_memory(*alist);
 }
 
+// Helper to print a single AsmOperand in AT&T syntax
+static void emit_operand(const AsmOperand *op) {
+    switch (op->kind) {
+        case OP_IMM:
+            printf("$%d", op->imm);       // e.g. $2
+            break;
+        case OP_REG:
+            if (op->reg == REG_AX)  printf("%%eax");
+            else                    printf("%%r10d");
+            break;
+        case OP_STACK:
+            // e.g. -4(%rbp)
+            printf("%d(%%rbp)", op->offset);
+            break;
+        case OP_PSEUDO:
+            // Should never exist here if you replaced pseudoregs
+            printf("<pseudo:%s>", op->pseudo);
+            break;
+    }
+}
+
+
+void emit_asm_function(const char *funcName, const AsmInstrList *list) {
+    // 1) Print a global symbol and label
+    printf(".globl %s\n", funcName);
+    printf("%s:\n", funcName);
+
+    // 2) Function prologue
+    printf("  pushq %%rbp\n");
+    printf("  movq %%rsp, %%rbp\n");
+
+    // 3) Now walk the instructions
+    for (; list; list = list->next) {
+        const AsmInstr *ins = &list->instr;
+        switch (ins->type) {
+            case ASM_ALLOCATE_STACK:
+                // subq $n, %rsp
+                printf("  subq $%d, %%rsp\n", ins->alloc.bytes);
+                break;
+
+            case ASM_MOV:
+                // movl src, dst
+                printf("  movl ");
+                emit_operand(&ins->mov.src);
+                printf(", ");
+                emit_operand(&ins->mov.dst);
+                printf("\n");
+                break;
+
+            case ASM_UNARY:
+                // notl or negl <operand>
+                if (ins->unary.op == UNARY_NOT) {
+                    printf("  notl ");
+                } else { 
+                    // UNARY_NEG
+                    printf("  negl ");
+                }
+                emit_operand(&ins->unary.operand);
+                printf("\n");
+                break;
+
+            case ASM_RET:
+                // 4) Epilogue for 'Ret'
+                printf("  movq %%rbp, %%rsp\n");
+                printf("  popq %%rbp\n");
+                printf("  ret\n");
+                break;
+        }
+    }
+}
