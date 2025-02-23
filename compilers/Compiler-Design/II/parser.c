@@ -14,6 +14,7 @@
 
 #include "lexer.h"
 #include "tacky.h"
+#include "assembly.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -202,6 +203,7 @@ static void syntaxError(const char *msg) {
 int main(int argc, char **argv) {
   const char *filename = NULL;
   int output_tacky = 0;
+  int output_asm = 0;
 
   // Find a .c file among the arguments
   for (int i = 1; i < argc; i++) {
@@ -209,6 +211,8 @@ int main(int argc, char **argv) {
       filename = argv[i];
     } else if (strcmp(argv[i], "--tacky") == 0) {
       output_tacky = 1;
+    } else if (strcmp(argv[i], "--asm") == 0) {
+      output_asm = 1;
     }
     // Potentially handle other flags here if needed
   }
@@ -234,6 +238,22 @@ int main(int argc, char **argv) {
   if (output_tacky) {
     print_tacky(tacky_instructions);
     return 0;
+  }
+
+  if (output_asm) {
+    // 1) Convert TACKY -> assembly with pseudo-registers
+    AsmInstrList *alist = tacky_to_asm(tacky_instructions);
+  
+
+    // try ASM
+    finalize_asm(&alist);
+
+
+    // 2) Print out assembly instructions
+    print_asm_list(alist);
+  
+
+    // TODO: free memory here... :) 
   }
 
   return 0;
