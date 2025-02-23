@@ -13,26 +13,24 @@
  */
 
 #include "lexer.h"
+#include "tacky.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 // We'll store the "current token" globally for simplicity
 static Token currentToken;
+static TackyInstrList *tacky_instructions = NULL;
 
 // Forward declarations for grammar-based functions
 static void parseProgram(void);
 static void parseFunction(void);
 static void parseStatement(void);
-static void parseExp(void);
 static void syntaxError(const char *msg);
 static void advanceToken(void);
 
-//--------------------------------------------------------------------
-// Minimal "C AST" info to pass to codegen
-//--------------------------------------------------------------------
-static char gFunctionName[128] = "main"; // default
-static int gReturnValue = 0;             // default
+// Emit a TACKY value for the next expression
+static TackyVal emit_tacky_expr(TackyInstrList **instructions);
 
 /**
  * parse()
@@ -58,7 +56,7 @@ static void parseFunction(void) {
   // Expect 'int'
   if (currentToken.type != TOKEN_KEYWORD ||
       strcmp(currentToken.value, "int") != 0) {
-    syntaxError("Expected 'int' keyword at start of function");
+      syntaxError("Expected 'int' keyword at start of function");
   }
   advanceToken();
 
@@ -66,10 +64,6 @@ static void parseFunction(void) {
   if (currentToken.type != TOKEN_ID) {
     syntaxError("Expected function name (identifier)");
   }
-
-  // Store the function name for codegen
-  strncpy(gFunctionName, currentToken.value, sizeof(gFunctionName) - 1);
-  gFunctionName[sizeof(gFunctionName) - 1] = '\0';
 
   advanceToken();
 
@@ -108,57 +102,82 @@ static void parseFunction(void) {
   advanceToken();
 }
 
-/**
- * <statement> ::= "return" <exp> ";"
- */
 static void parseStatement(void) {
-  if (currentToken.type != TOKEN_KEYWORD ||
-      strcmp(currentToken.value, "return") != 0) {
-    syntaxError("Expected 'return' statement");
-  }
-  advanceToken();
+    if (currentToken.type != TOKEN_KEYWORD || strcmp(currentToken.value, "return") != 0) {
+        syntaxError("Expected 'return' statement");
+    }
+    advanceToken();
 
-  // parse <exp>
-  parseExp();
+    // Generate TACKY IR for expression and get the result variable
+    TackyVal val = emit_tacky_expr(&tacky_instructions);
 
-  // Expect ';'
-  if (currentToken.type != TOKEN_SEMICOLON) {
-    syntaxError("Expected ';' after return expression");
-  }
-  advanceToken();
+    // Emit a Return instruction referencing the computed value
+    TackyInstr instr;
+    instr.type = TACKY_RETURN;
+    instr.return_instr.val = val;  // Convert result to integer
+    add_tacky_instr(&tacky_instructions, instr);
+
+    // Expect ';'
+    if (currentToken.type != TOKEN_SEMICOLON) {
+        syntaxError("Expected ';' after return expression");
+    }
+    advanceToken();
 }
 
-/**
- * <exp> ::= <int> | <unary_operator> <expr>
- * <unary_operator> :: = "~" | "-"
- *
- */
-static void parseExp(void) {
-  if (currentToken.type == TOKEN_LPAREN) {
-    advanceToken();
-    parseExp();
-    if (currentToken.type != TOKEN_RPAREN) {
-      syntaxError("Expected ')' after expression");
+//------------------------------------
+// Expression => generate TACKYVal
+//------------------------------------
+static TackyVal emit_tacky_expr(TackyInstrList **instructions) {
+    // Parenthesized expression
+    if (currentToken.type == TOKEN_LPAREN) {
+        advanceToken();
+        TackyVal innerVal = emit_tacky_expr(instructions);
+        if (currentToken.type != TOKEN_RPAREN) {
+            syntaxError("Expected ')' after expression");
+        }
+        advanceToken();
+        return innerVal;
     }
-    advanceToken(); // consume ')'
-  } else if (currentToken.type == TOKEN_MINUS || currentToken.type == TOKEN_TILDE) {
-    TokenType unaryOp = currentToken.type;
-    advanceToken();
+    // Unary operators '-' or '~'
+    else if (currentToken.type == TOKEN_MINUS || currentToken.type == TOKEN_TILDE) {
+        TokenType op = currentToken.type;
+        advanceToken();
 
-    parseExp();
+        TackyVal src = emit_tacky_expr(instructions);
 
-    if (unaryOp == TOKEN_MINUS) {
-      gReturnValue = -gReturnValue;
-    } else if (unaryOp == TOKEN_TILDE) {
-      gReturnValue = ~gReturnValue;
+        // Allocate a new temp var
+        TackyVal dst;
+        dst.type = TACKY_VAL_VAR;
+        strncpy(dst.var, generate_temp_var(), sizeof(dst.var));
+
+        // Create a Unary instruction
+        TackyInstr u;
+        u.type = TACKY_UNARY;
+        u.unary_instr.op =
+            (op == TOKEN_MINUS) ? UNARY_NEGATE : UNARY_COMPLEMENT;
+        u.unary_instr.src = src;
+        u.unary_instr.dst = dst;
+        add_tacky_instr(instructions, u);
+
+        return dst; // result is the newly created temp
     }
-  } else if (currentToken.type == TOKEN_INT) {
-    // Convert the integer token's value to an int
-    gReturnValue = atoi(currentToken.value);
-    advanceToken();
-  } else {
-    syntaxError("Expected integer literal or unary expression in <exp>");
-  }
+    // Integer literal
+    else if (currentToken.type == TOKEN_INT) {
+        TackyVal val;
+        val.type = TACKY_VAL_CONST;
+        val.constant = atoi(currentToken.value);
+        advanceToken();
+        return val;
+    }
+    // Error
+    else {
+        syntaxError("Invalid expression");
+        // Unreachable
+        TackyVal dummy;
+        dummy.type = TACKY_VAL_CONST;
+        dummy.constant = 0;
+        return dummy;
+    }
 }
 
 //--------------------------------------
@@ -172,41 +191,6 @@ static void syntaxError(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-//--------------------------------------------------------------------
-// Minimal code emission
-// We only handle: function returning a single integer
-// Format, with platform adjustments:
-//
-//    .section .text
-//    .globl <functionName>     (or _<functionName> on macOS)
-// <functionName>:              (or _<functionName>: on macOS)
-//    movl $<gReturnValue>, %eax
-//    ret
-//
-// Linux: we also append: .section .note.GNU-stack,"",@progbits
-//--------------------------------------------------------------------
-static void generateAssembly(void) {
-  // Print the usual .text section
-  printf(".section .text\n");
-
-#ifdef __APPLE__
-  // macOS => underscore in function label
-  printf(".globl _%s\n", gFunctionName);
-  printf("_%s:\n", gFunctionName);
-#else
-  // Linux => no underscore, but we also need .note.GNU-stack at the end
-  printf(".globl %s\n", gFunctionName);
-  printf("%s:\n", gFunctionName);
-#endif
-
-  printf("    movl $%d, %%eax\n", gReturnValue);
-  printf("    ret\n");
-
-#ifndef __APPLE__
-  // Linux => add the note.GNU-stack line
-  printf(".section .note.GNU-stack,\"\",@progbits\n");
-#endif
-}
 
 /**
  * main() - now locates a .c file among the arguments
@@ -217,11 +201,14 @@ static void generateAssembly(void) {
  */
 int main(int argc, char **argv) {
   const char *filename = NULL;
+  int output_tacky = 0;
 
   // Find a .c file among the arguments
   for (int i = 1; i < argc; i++) {
     if (strstr(argv[i], ".c")) {
       filename = argv[i];
+    } else if (strcmp(argv[i], "--tacky") == 0) {
+      output_tacky = 1;
     }
     // Potentially handle other flags here if needed
   }
@@ -244,8 +231,10 @@ int main(int argc, char **argv) {
   // Run the parser
   parse();
 
-  // Emit final assembly
-  generateAssembly();
+  if (output_tacky) {
+    print_tacky(tacky_instructions);
+    return 0;
+  }
 
   return 0;
 }
