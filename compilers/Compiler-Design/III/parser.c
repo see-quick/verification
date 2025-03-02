@@ -37,6 +37,7 @@ static TackyVal parseExpr(int);
 static TackyVal parseFactor(void);
 static void syntaxError(const char *msg);
 static void advanceToken(void);
+static int get_precedence(Token);
 
 // Emit a TACKY value for the next expression
 static TackyVal emit_tacky_expr(TackyInstrList **instructions);
@@ -189,18 +190,6 @@ static TackyVal emit_tacky_expr(TackyInstrList **instructions) {
     }
 }
 
-static int get_precedence(Token token) {
-    if (token.type != TOKEN_OPERATOR && token.type != TOKEN_MINUS) return -1;  // Not a binary operator
-
-    if (strcmp(token.value, "*") == 0) return 50;
-    if (strcmp(token.value, "/") == 0) return 50;
-    if (strcmp(token.value, "%") == 0) return 50;
-    if (strcmp(token.value, "+") == 0) return 45;
-    if (strcmp(token.value, "-") == 0) return 45;
-
-    return -1; // Unknown operator
-}
-
 static TackyVal parseFactor(void) {
     if (currentToken.type == TOKEN_INT) {
         TackyVal val;
@@ -301,6 +290,18 @@ static void advanceToken(void) { currentToken = get_token(); }
 static void syntaxError(const char *msg) {
   fprintf(stderr, "Syntax Error: %s\n", msg);
   exit(EXIT_FAILURE);
+}
+
+static int get_precedence(Token token) {
+    if (token.type != TOKEN_OPERATOR && token.type != TOKEN_MINUS) return -1;  // Not a binary operator
+
+    if (strcmp(token.value, "*") == 0) return 50;
+    if (strcmp(token.value, "/") == 0) return 50;
+    if (strcmp(token.value, "%") == 0) return 50;
+    if (strcmp(token.value, "+") == 0) return 45;
+    if (strcmp(token.value, "-") == 0) return 45;
+
+    return -1; // Unknown operator
 }
 
 /**
