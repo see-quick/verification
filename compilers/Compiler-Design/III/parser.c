@@ -39,9 +39,6 @@ static void syntaxError(const char *msg);
 static void advanceToken(void);
 static int get_precedence(Token);
 
-// Emit a TACKY value for the next expression
-static TackyVal emit_tacky_expr(TackyInstrList **instructions);
-
 /**
  * parse()
  * Entry point for the parser: parse <program> = <function>
@@ -132,62 +129,6 @@ static void parseStatement(void) {
         syntaxError("Expected ';' after return expression");
     }
     advanceToken();
-}
-
-//------------------------------------
-// Expression => generate TACKYVal
-//------------------------------------
-static TackyVal emit_tacky_expr(TackyInstrList **instructions) {
-    // Parenthesized expression
-    if (currentToken.type == TOKEN_LPAREN) {
-        advanceToken();
-        TackyVal innerVal = emit_tacky_expr(instructions);
-        if (currentToken.type != TOKEN_RPAREN) {
-            syntaxError("Expected ')' after expression");
-        }
-        advanceToken();
-        return innerVal;
-    }
-    // Unary operators '-' or '~'
-    else if (currentToken.type == TOKEN_MINUS || currentToken.type == TOKEN_TILDE) {
-        TokenType op = currentToken.type;
-        advanceToken();
-
-        TackyVal src = emit_tacky_expr(instructions);
-
-        // Allocate a new temp var
-        TackyVal dst;
-        dst.type = TACKY_VAL_VAR;
-        strncpy(dst.var, generate_temp_var(), sizeof(dst.var));
-
-        // Create a Unary instruction
-        TackyInstr u;
-        u.type = TACKY_UNARY;
-        u.unary_instr.op =
-            (op == TOKEN_MINUS) ? UNARY_NEGATE : UNARY_COMPLEMENT;
-        u.unary_instr.src = src;
-        u.unary_instr.dst = dst;
-        add_tacky_instr(instructions, u);
-
-        return dst; // result is the newly created temp
-    }
-    // Integer literal
-    else if (currentToken.type == TOKEN_INT) {
-        TackyVal val;
-        val.type = TACKY_VAL_CONST;
-        val.constant = atoi(currentToken.value);
-        advanceToken();
-        return val;
-    }
-    // Error
-    else {
-        syntaxError("Invalid expression");
-        // Unreachable
-        TackyVal dummy;
-        dummy.type = TACKY_VAL_CONST;
-        dummy.constant = 0;
-        return dummy;
-    }
 }
 
 static TackyVal parseFactor(void) {
