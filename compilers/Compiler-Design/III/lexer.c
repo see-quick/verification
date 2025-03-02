@@ -221,40 +221,40 @@ static int is_keyword(const char *str) {
   return 0;
 }
 
-int main(int argc, char **argv) {
-  const char *filename = NULL;
-
-  // Find a .c file among the arguments
-  for (int i = 1; i < argc; i++) {
-    if (strstr(argv[i], ".c")) {
-      filename = argv[i];
-    }
-    // Potentially handle other flags here if needed
-  }
-
-  if (!filename) {
-    fprintf(stderr, "No .c file provided.\n");
-    return EXIT_FAILURE;
-  }
-
-  FILE *file = fopen(filename, "r");
-  if (!file) {
-    perror("Error opening file");
-    return EXIT_FAILURE;
-  }
-
-  // Let the lexer read everything in
-  read_input(file);
-  fclose(file);
-
-  Token token;
-  do {
-    token = get_token();
-    if (token.type == TOKEN_ERROR) {
-      return EXIT_FAILURE;
-    }
-    printf("Token: Type=%d, Value='%s'\n", token.type, token.value);
-  } while (token.type != TOKEN_EOF);
-
-  return EXIT_SUCCESS;
-}
+//int main(int argc, char **argv) {
+//  const char *filename = NULL;
+//
+//  // Find a .c file among the arguments
+//  for (int i = 1; i < argc; i++) {
+//    if (strstr(argv[i], ".c")) {
+//      filename = argv[i];
+//    }
+//    // Potentially handle other flags here if needed
+//  }
+//
+//  if (!filename) {
+//    fprintf(stderr, "No .c file provided.\n");
+//    return EXIT_FAILURE;
+//  }
+//
+//  FILE *file = fopen(filename, "r");
+//  if (!file) {
+//    perror("Error opening file");
+//    return EXIT_FAILURE;
+//  }
+//
+//  // Let the lexer read everything in
+//  read_input(file);
+//  fclose(file);
+//
+//  Token token;
+//  do {
+//    token = get_token();
+//    if (token.type == TOKEN_ERROR) {
+//      return EXIT_FAILURE;
+//    }
+//    printf("Token: Type=%d, Value='%s'\n", token.type, token.value);
+//  } while (token.type != TOKEN_EOF);
+//
+//  return EXIT_SUCCESS;
+//}
