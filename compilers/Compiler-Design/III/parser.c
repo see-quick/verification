@@ -271,7 +271,7 @@ static TackyVal parseExpr(int min_prec) {
 
         instr.binary_instr.left = left;
         instr.binary_instr.right = right;
-        instr.binary_instr.dest = dst;
+        instr.binary_instr.dst = dst;
         add_tacky_instr(&tacky_instructions, instr);
 
         left = dst; // The result becomes the new left operand

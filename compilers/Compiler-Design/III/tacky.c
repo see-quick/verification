@@ -45,6 +45,25 @@ void print_tacky(TackyInstrList *list) {
       printf(", ");
       print_val(list->instr.unary_instr.dst);
       printf(")\n");
+    } else if (list->instr.type == TACKY_BINARY) {
+      printf("Binary(");
+      if (list->instr.binary_instr.op == BINARY_ADD) {
+        printf("Add, ");
+      } else if (list->instr.binary_instr.op == BINARY_SUBTRACT) {
+        printf("Subtract, ");
+      } else if (list->instr.binary_instr.op == BINARY_MULTIPLY) {
+        printf("Multiply, ");
+      } else if (list->instr.binary_instr.op == BINARY_DIVIDE) {
+        printf("Divide, ");
+      } else if (list->instr.binary_instr.op == BINARY_REMAINDER) {
+        printf("Remainder, ");
+      }
+      print_val(list->instr.binary_instr.left);
+      printf(", ");
+      print_val(list->instr.binary_instr.right);
+      printf(", ");
+      print_val(list->instr.binary_instr.dst);
+      printf(")\n");
     }
     list = list->next;
   }

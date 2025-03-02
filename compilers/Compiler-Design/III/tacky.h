@@ -53,7 +53,7 @@ typedef struct {
             BinaryOp op;
             TackyVal left;
             TackyVal right;
-            TackyVal dest;
+            TackyVal dst;
         } binary_instr;
     };
 } TackyInstr;
