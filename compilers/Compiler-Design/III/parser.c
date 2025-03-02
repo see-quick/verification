@@ -33,7 +33,8 @@ static TackyInstrList *tacky_instructions = NULL;
 static void parseProgram(void);
 static void parseFunction(void);
 static void parseStatement(void);
-static TackyVal parse_exp(int);
+static TackyVal parseExpr(int);
+static TackyVal parseFactor(void);
 static void syntaxError(const char *msg);
 static void advanceToken(void);
 
@@ -117,7 +118,7 @@ static void parseStatement(void) {
     advanceToken();
 
     // Generate TACKY IR for expression and get the result variable
-    TackyVal val = parse_exp(0);
+    TackyVal val = parseExpr(0);
 
     // Emit a Return instruction referencing the computed value
     TackyInstr instr;
@@ -200,7 +201,7 @@ static int get_precedence(Token token) {
     return -1; // Unknown operator
 }
 
-static TackyVal parse_factor(void) {
+static TackyVal parseFactor(void) {
     if (currentToken.type == TOKEN_INT) {
         TackyVal val;
         val.type = TACKY_VAL_CONST;
@@ -214,7 +215,7 @@ static TackyVal parse_factor(void) {
         TokenType op = currentToken.type;
         advanceToken();
         
-        TackyVal src = parse_factor();
+        TackyVal src = parseFactor();
         
         // Allocate a temp variable
         TackyVal dst;
@@ -235,7 +236,7 @@ static TackyVal parse_factor(void) {
     // Parentheses
     if (currentToken.type == TOKEN_LPAREN) {
         advanceToken();
-        TackyVal inner = parse_exp(0); // Reset precedence to 0
+        TackyVal inner = parseExpr(0); // Reset precedence to 0
         if (currentToken.type != TOKEN_RPAREN) {
             syntaxError("Expected ')' after expression");
         }
@@ -247,8 +248,8 @@ static TackyVal parse_factor(void) {
     return (TackyVal){.type = TACKY_VAL_CONST, .constant = 0}; // Fallback
 }
 
-static TackyVal parse_exp(int min_prec) {
-    TackyVal left = parse_factor();
+static TackyVal parseExpr(int min_prec) {
+    TackyVal left = parseFactor();
 
     while (1) {
         int prec = get_precedence(currentToken);
@@ -262,7 +263,7 @@ static TackyVal parse_exp(int min_prec) {
         advanceToken(); // Consume the operator
 
         // Parse right-hand side with higher precedence
-        TackyVal right = parse_exp(prec + 1);
+        TackyVal right = parseExpr(prec + 1);
 
         // Allocate a temp variable
         TackyVal dst;
