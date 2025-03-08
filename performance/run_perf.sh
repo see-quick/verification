@@ -36,9 +36,11 @@ for LANG in $LANGUAGE_DIRS; do
     if [ ! -f "$EXEC" ]; then
       echo -e "${YELLOW}Compiling $EXP_DIR...${RESET}"
       if [ "$LANG" = "go" ]; then
-        go build -o $EXEC main.go
+        go build -o "$EXEC" main.go
       elif [ "$LANG" = "rust" ]; then
-        rustc -C opt-level=3 main.rs -o $EXEC
+        rustc -C opt-level=3 main.rs -o "$EXEC"
+      elif [ "$LANG" = "c" ]; then
+        gcc -O3 main.c -o "$EXEC"
       fi
     fi
 
