@@ -5,13 +5,14 @@
 ### **Go**
 ```
 Running 30s test @ http://localhost:8080/
+  12 threads and 1000 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     4.70ms    6.32ms 139.58ms   91.68%
-    Req/Sec    16.91k     6.36k   55.70k    72.09%
-  6047660 requests in 30.09s, 749.77MB read
-  Socket errors: connect 0, read 3431, write 0, timeout 0
-Requests/sec: 200953.65
-Transfer/sec:     24.91MB
+    Latency     8.99ms  666.81us  36.06ms   86.88%
+    Req/Sec     9.21k   679.94    10.00k    96.92%
+  3298243 requests in 30.02s, 408.91MB read
+  Socket errors: connect 0, read 3313, write 0, timeout 0
+Requests/sec: 109876.59
+Transfer/sec:     13.62MB
 ```
 
 ### **Rust**
