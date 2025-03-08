@@ -1,5 +1,44 @@
 # Language Performance Comparison
 
+## HTTP Server Benchmark (wrk -t12 -c1000 -d30s http://localhost:8080/)
+
+### **Go**
+```
+Running 30s test @ http://localhost:8080/
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.70ms    6.32ms 139.58ms   91.68%
+    Req/Sec    16.91k     6.36k   55.70k    72.09%
+  6047660 requests in 30.09s, 749.77MB read
+  Socket errors: connect 0, read 3431, write 0, timeout 0
+Requests/sec: 200953.65
+Transfer/sec:     24.91MB
+```
+
+### **Rust**
+```
+Running 30s test @ http://localhost:8080/
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    19.64ms    8.09ms  80.86ms   78.49%
+    Req/Sec    46.08    166.34     8.54k    99.53%
+  13328 requests in 30.06s, 676.81KB read
+  Socket errors: connect 0, read 623616, write 0, timeout 0
+Requests/sec:    443.45
+Transfer/sec:     22.52KB
+```
+
+### **C**
+```
+Running 30s test @ http://localhost:8080/
+  12 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    15.19ms    5.10ms  89.51ms   89.28%
+    Req/Sec    84.63     77.57     3.01k    90.98%
+  28425 requests in 30.04s, 1.41MB read
+  Socket errors: connect 0, read 921246, write 0, timeout 0
+Requests/sec:    946.35
+Transfer/sec:     48.06KB
+```
+
 ## Directory Structure and Performance
 
 | Language | Test | Description                            | Execution Time (ms) |
