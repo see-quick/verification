@@ -2,6 +2,9 @@
 out
 target
 
+
+_apalache-out
+
 # Binary files
 formal_verification/abstract_interpretation/bin
 *.out
