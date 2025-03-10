@@ -33,4 +33,11 @@ module bank {
  
   /// An invariant stating that all accounts should have a non-negative balance
   val no_negatives = ADDRESSES.forall(addr => balances.get(addr) >= 0)
+  
+  // safety: The domain of 'balances' must always
+  /// match the set of known addresses (no extra keys).
+  val domainIsAddresses = balances.keys() == ADDRESSES
+  
+  temporal Safety = 
+    always(no_negatives and domainIsAddresses)
 }
