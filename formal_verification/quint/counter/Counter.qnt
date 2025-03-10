@@ -22,3 +22,4 @@ module Counter {
   /// Liveness property: count should eventually reach 10
   temporal EventuallyMax = eventually(count == 10)
 }
+
