@@ -18,4 +18,7 @@ module Counter {
 
   /// Safety invariant: count should never exceed 10
   val TypeInvariant = count <= 10
+  
+  /// Liveness property: count should eventually reach 10
+  temporal EventuallyMax = eventually(count == 10)
 }
