@@ -46,6 +46,10 @@ module DiningPhilosophers {
         not(rightFork(p).in(forks) and (p, leftFork(p)).in(taken))  
         // Right fork must be available, and the philosopher must already hold the left fork
 
+    // Determines if a philosopher can eat (both forks are held)
+    def canEat(p: Philosopher): bool =
+        (p, leftFork(p)).in(taken) and (p, rightFork(p)).in(taken)
+
     // --- INITIALIZATION ---
 
     // Initializes the simulation with no forks held and no philosophers having taken any forks
@@ -70,6 +74,21 @@ module DiningPhilosophers {
       forks' = forks.union(Set(rightFork(p)))  // Add the right fork to the set of held forks
     }
 
+     // Philosopher starts eating if both forks are held
+    action eat(p) = all {
+      canEat(p),  // Ensure philosopher has both forks
+      taken' = taken,
+      forks' = forks
+      // Eating action itself does not modify state (pure computation) - BUT we have to specify those :)
+    }
+
+    // Philosopher releases both forks after eating
+    action releaseForks(p) = all {
+      canEat(p),  // Ensure the philosopher has both forks
+      taken' = taken.exclude(Set((p, leftFork(p)), (p, rightFork(p)))),  // Remove philosopher from taken forks
+      forks' = forks.exclude(Set(leftFork(p), rightFork(p)))  // Remove forks from held set
+    }
+
     // Philosopher attempts to put down both forks
     action pickBothForks(p) = all {
       canPickRight(p) and canPickLeft(p),  // Ensure both forks are available
@@ -85,7 +104,9 @@ module DiningPhilosophers {
       any {
         pickLeftFork(p),   // Try to pick the left fork
         pickRightFork(p),  // Try to pick the right fork
-        pickBothForks(p)   // Try to put down both forks
+        eat(p),            // Eat when both forks are held
+        pickBothForks(p),   // Try to put down both forks
+        releaseForks(p)
       }
     }
 
