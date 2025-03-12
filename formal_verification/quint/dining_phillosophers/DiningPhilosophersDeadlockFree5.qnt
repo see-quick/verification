@@ -104,6 +104,33 @@ module DiningPhilosophers {
       }
     }
 
+    // Safety properties
+    
+    // INVARIANTS: Ensures type correctness of the state variables
+    val TypeOk = and {
+      // Forks must be within the set of valid fork values
+      forks.subseteq(philosophers.map(p => leftFork(p)).union(philosophers.map(p => rightFork(p)))),
+      
+      // Taken pairs must contain valid philosophers and valid forks
+      taken.forall(pair => pair._1.in(philosophers) and pair._2.in(forks)),
+  
+      // State mapping must contain only valid philosophers and valid states
+      states.keys().forall(k => 
+          states.get(k).in(Set("THINKING", "HUNGRY", "EATING"))) // States must be valid strings
+    }
+    
+    val Safety = and {
+      // No two adjacent philosophers can be eating at the same time
+      philosophers.forall(p =>
+        not(states.get(p) == "EATING" and states.get(rightPhilosopher(p)) == "EATING")
+      ),
+
+      //  TODO: Each fork must be held by at most one philosopher
+      // taken.forall(pair =>
+      //  
+      //  taken.size(other => other._2 == pair._2) <= 1
+    }
+
     // --- DEADLOCK PROPERTY ---
     val DeadlockCondition = and {
         philosophers.forall(p => states.get(p) == "HUNGRY"), // Everyone is hungry
@@ -111,6 +138,5 @@ module DiningPhilosophers {
     }
 
     temporal DeadlockProperty = eventually(DeadlockCondition)
-    
     temporal NoStarvation = philosophers.forall(p => always(eventually(states.get(p) == "EATING"))) 
 }
