@@ -124,11 +124,11 @@ module DiningPhilosophers {
       philosophers.forall(p =>
         not(states.get(p) == "EATING" and states.get(rightPhilosopher(p)) == "EATING")
       ),
-
-      //  TODO: Each fork must be held by at most one philosopher
-      // taken.forall(pair =>
-      //  
-      //  taken.size(other => other._2 == pair._2) <= 1
+      
+      // Each fork must be held by at most one philosopher
+      forks.forall(f => 
+          size(taken.filter(pair => pair._2 == f)) <= 1
+      )
     }
 
     // --- DEADLOCK PROPERTY ---
