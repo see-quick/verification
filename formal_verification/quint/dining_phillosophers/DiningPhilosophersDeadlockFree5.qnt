@@ -125,7 +125,7 @@ module DiningPhilosophers {
         not(states.get(p) == "EATING" and states.get(rightPhilosopher(p)) == "EATING")
       ),
       
-      // Each fork must be held by at most one philosopher
+     // MutualExclusion = Each fork must be held by at most one philosopher
       forks.forall(f => 
           size(taken.filter(pair => pair._2 == f)) <= 1
       )
@@ -138,5 +138,14 @@ module DiningPhilosophers {
     }
 
     temporal DeadlockProperty = eventually(DeadlockCondition)
+
+    //  ensure that we can always escape deadlock.
+    temporal DeadlockFreedom = always(eventually(not(DeadlockCondition)))
+    
+    // starvation freedom = occurs if a philosopher is infinitely prevented from eating. We ensure that every philosopher will eventually eat.
     temporal NoStarvation = philosophers.forall(p => always(eventually(states.get(p) == "EATING"))) 
+    
+    //  ensures that no philosopher stays in the “HUNGRY” state forever.
+    temporal LivelockFreedom = philosophers.forall(p => not(always(states.get(p) == "HUNGRY")))
 }
+
