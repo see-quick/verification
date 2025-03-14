@@ -21,3 +21,6 @@ states
 # TLA+ files generating graphs
 *.dot
 *.dump
+
+# some book related stuff
+assembly/Source/
