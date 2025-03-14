@@ -1,7 +1,7 @@
 module Counter {
   /// State variable representing the counter
   var count: int
-
+  
   /// Initial condition: count starts at 0
   action init = {
     count' = 0
