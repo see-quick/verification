@@ -1,4 +1,11 @@
+# Deadlock example with two processes 
+
+## Command to run simulation
+
+```bash
 quint run DeadlockExample.qnt --invariant=DeadlockCondition --mbt  --verbosity=5
+```
+
 An example execution:
 ```requirements
 [Frame 0]
