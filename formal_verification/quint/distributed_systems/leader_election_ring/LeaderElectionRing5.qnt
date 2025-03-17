@@ -1,5 +1,4 @@
 module LeaderElectionRing {
-
     // --- MODEL PARAMETERS ---
     const N: int // Number of processes
 
@@ -89,7 +88,6 @@ module LeaderElectionRing {
     val LeaderExists = 
       (size(processes.filter(p => not(p.in(failed)))) > 0) 
        .implies(size(states.keys().filter(p => states.get(p) == "leader")) == 1)
-
 
     // ✅ The leader must not be a failed process
     val ValidLeader = (leader >= 0 and leader < N).implies(not(leader.in(failed)))
