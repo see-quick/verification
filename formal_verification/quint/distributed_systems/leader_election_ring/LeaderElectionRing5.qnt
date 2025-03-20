@@ -16,14 +16,18 @@ module LeaderElectionRing {
     val processes = 0.to(N - 1)
   
     def nextProcess(p : Process) : int = (p + 1) % N
+    def firstElement(vals: Set[Process]): Process =
+      vals.fold(-1, (acc, v) => if (acc == -1) v else acc)
+
     // Computes the maximum value in a set of integers
     def maxValue(vals: Set[Process]): Process =
       if (size(vals) == 0) 
         -1 
       else 
-        vals.fold(-1, (max, v) => if (v > max) v else max)
-    def maxId(messages : Set[(Process, Process)], p : Process) : int =   
-      maxValue(messages.filter(m => m._1 == p).map(m => m._2))
+        vals.fold(firstElement(vals), (max, v) => if (v > max) v else max)
+    
+    def maxId(messages: Set[(Process, Process)], p: Process): int =
+      maxValue(messages.filter(m => m._1 == p and m._2 >= 0).map(m => m._2))
 
     // --- INITIALIZATION ---
     action init = all {
@@ -45,13 +49,13 @@ module LeaderElectionRing {
     }
     
     action electLeader(p) = all {
-        not(p.in(failed)),
-        size(messages.filter(m => m._1 == p)) > 0, // Process received at least one message
-        maxId(messages, p) == p, // The highest ID received is its own
-        leader' = p, // This process is the new leader
-        states' = processes.mapBy(i => if (i == p and not(i.in(failed))) "leader" else "idle"),
-        messages' = Set(), // Clear messages after election
-        failed' = failed  // Ensure failed is updated (even if unchanged)
+       not(p.in(failed)),
+       size(messages.filter(m => m._1 == p)) > 0, // Process received at least one message
+       maxId(messages, p) == p, // The highest ID received is its own
+       leader' = p, // This process is the new leader
+       states' = processes.mapBy(i => if (i == p and not(i.in(failed))) "leader" else "idle"),
+       messages' = Set(), // Clear messages after election
+       failed' = failed  // Ensure failed is updated (even if unchanged)
     }
 
     // --- PROCESS FAILURE ---
@@ -84,17 +88,25 @@ module LeaderElectionRing {
     val UniqueLeader = 
         size(states.keys().filter(p => states.get(p) == "leader")) <= 1
 
-    // ⚠️ TODO: Need modification here to ingnore init state ... :)  A leader must exist if there are active processes
-    val LeaderExists = 
-      (size(processes.filter(p => not(p.in(failed)))) > 0) 
-       .implies(size(states.keys().filter(p => states.get(p) == "leader")) == 1)
-
     // ✅ The leader must not be a failed process
     val ValidLeader = (leader >= 0 and leader < N).implies(not(leader.in(failed)))
 
-    // ❌ TODO check this.. : Messages must not contain failed processes
-    val ValidMessages = messages.forall(m => not(m._1.in(failed)) and not(m._2.in(failed)))  
+    val vars = (messages, states, leader, failed)
 
+    temporal WeakFairness =
+      weakFair(step, vars)
+    temporal StrongFairElection =
+       processes.forall(p => strongFair(electLeader(p), vars))
+    temporal StrongFairMessagePassing =
+       processes.forall(p => strongFair(propagateMessage(p), vars))
+
+    // TODO: still this would crash because we do not handle failures (it can happen that all nodes will crash...)
+    temporal EventualLeader =
+      (WeakFairness and StrongFairElection and StrongFairMessagePassing)
+        implies always(eventually(
+          (leader != -1) and
+          (size(states.keys().filter(p => states.get(p) == "leader")) == 1)
+        ))
 }
 
 module LeaderElectionRing5 {
