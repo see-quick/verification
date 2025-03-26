@@ -1,3 +1,30 @@
+/**
+ * LeaderElectionRing: Quint specification of the Ring-based Leader Election algorithm.
+ *
+ * This specification models a set of `N` processes arranged in a ring.
+ * Each process can initiate an election by sending its ID around the ring.
+ * The goal is to elect the process with the highest ID as the leader.
+ *
+ * --- Verification Goals ---
+ * 
+ * 1. **Safety**
+ *    - UniqueLeader: At most one process can be the leader at any time.
+ *    - ValidLeader: If a leader exists, it must be an active (non-failed) process.
+ *    - ValidMessages: All messages must reference valid processes and non-negative IDs.
+ *
+ * 2. **Liveness**
+ *    - EventualLeader: If at least one process remains alive and elections are enabled,
+ *      then eventually, a single valid leader is elected.
+ *
+ * --- Fairness Assumptions ---
+ *
+ * The liveness property assumes:
+ *    - `weakFair(step, vars)`: the system keeps making progress.
+ *    - `strongFair(electLeader(p), vars)`: elections are not indefinitely ignored.
+ *    - `strongFair(propagateMessage(p), vars)`: message forwarding eventually happens.
+ *
+ * Model checked with TLC and verified for N = 5.
+ */
 module LeaderElectionRing {
     // --- MODEL PARAMETERS ---
     const N: int // Number of processes
