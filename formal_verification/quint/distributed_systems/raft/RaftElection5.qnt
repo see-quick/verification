@@ -1,3 +1,34 @@
+/**
+ * RaftElection: Quint specification of the Raft consensus algorithm (simplified).
+ *
+ * This model captures the core mechanics of the Raft protocol:
+ *   - Leader election using terms and votes
+ *   - Log replication from the leader to followers
+ *   - Commitment of log entries replicated on a quorum
+ *
+ * --- Verification Goals ---
+ *
+ * 1. **Safety**
+ *    - UniqueLeaderPerTerm: At most one leader is elected per term.
+ *    - LogAgreement: All processes with the same commit index must agree on the committed prefix.
+ *    - CommittedInLeader: Committed entries appear in the current leader’s log.
+ *    - FollowerPrefixOfLeader: Follower logs must be a prefix of the leader’s log.
+ *    - NoInvalidReplication: Logs do not diverge then converge incorrectly.
+ *    - FollowerLogConsistency: Followers with same-length logs must match exactly.
+ *
+ * 2. **Liveness**
+ *    - EventualLeader: If elections keep happening fairly, a leader will eventually emerge.
+ *
+ * --- Fairness Assumptions ---
+ *
+ *   - `weakFair(step, vars)`: system transitions continue to occur.
+ *   - `strongFair(startElection(p), vars)`: elections are eventually triggered.
+ *   - `strongFair(vote(p, q), vars)`: votes are not indefinitely withheld.
+ *   - `strongFair(becomeLeader(p), vars)`: eligible candidates eventually become leaders.
+ *
+ * Model verified for small configurations (e.g., N = 3, N = 5).
+ * Designed to be extended with message-passing and client interactions.
+ */
 module RaftElection {
   const N: int
 
