@@ -37,6 +37,11 @@ module RaftElection {
       ) i else best
     )
 
+  def matchLogPrefix(follower: Process, leader: Process): bool =
+    val fl = logs.get(follower)
+    val ll = logs.get(leader)
+    fl.length() <= ll.length() and ll.slice(0, fl.length()) == fl
+
   // INIT
   action init = all {
     roles' = processes.mapBy(p => Follower),
@@ -132,6 +137,36 @@ module RaftElection {
     leader' = leader
   }
 
+  // Phase 3: Hearth beats + append entries...
+  action sendAppendEntries(p, q) = all {
+    roles.get(p) == Leader,
+    roles.get(q) == Follower,
+  
+    matchLogPrefix(q, p),
+  
+    logs' = logs.set(q, logs.get(p)),  // overwrite if prefix match
+    commitIndex' = commitIndex,
+    roles' = roles,
+    currentTerm' = currentTerm,
+    votedFor' = votedFor,
+    votes' = votes,
+    leader' = leader
+  }
+
+  action sendHeartbeat(p, q) = all {
+    roles.get(p) == Leader,
+    roles.get(q) == Follower,
+    logs.get(p).length() == logs.get(q).length(),
+  
+    logs' = logs,
+    commitIndex' = commitIndex,
+    roles' = roles,
+    currentTerm' = currentTerm,
+    votedFor' = votedFor,
+    votes' = votes,
+    leader' = leader
+  }
+
   // SYSTEM STEP
   action step = {
     nondet p = oneOf(processes)
@@ -143,6 +178,8 @@ module RaftElection {
       becomeLeader(p),
       appendNewCommand(p, cmd),
       replicateLog(p, q),
+      sendAppendEntries(p, q),
+      sendHeartbeat(p, q),
       commitEntries(p)
     }
   }
@@ -180,6 +217,40 @@ module RaftElection {
     processes.forall(p =>
       always(commitIndex.get(p) >= 0)  // implied, but you could track deltas over time too
     )
+
+  // 🛡️ Every follower’s log must always be a prefix of the leader’s log.
+  val FollowerPrefixOfLeader =
+    leader != -1 implies
+      processes.forall(p =>
+        roles.get(p) == Follower implies
+          logs.get(leader).slice(0, logs.get(p).length()) == logs.get(p)
+      )
+
+  // 🛡️If a follower log diverges from the leader, it cannot be overwritten (i.e., AppendEntries doesn’t break log integrity).
+  val NoInvalidReplication =
+    processes.forall(p =>
+      processes.forall(q =>
+        not(matchLogPrefix(p, q)) implies
+          logs.get(p) != logs.get(q)
+      )
+    )
+  
+  // 🛡️The leader’s log is at least as long as any follower’s.
+  val LeaderLogIsLongest =
+    leader != -1 implies
+      processes.forall(p =>
+        logs.get(p).length() <= logs.get(leader).length()
+      )
+  
+  // 🛡️ If two followers have the same length, their logs must match exactly.
+  val FollowerLogConsistency =
+    processes.forall(p => processes.forall(q =>
+      roles.get(p) == Follower and
+      roles.get(q) == Follower and
+      logs.get(p).length() == logs.get(q).length()
+      implies
+      logs.get(p) == logs.get(q)
+    ))
 
   // TEMPORAL
   temporal WeakFair = weakFair(step, vars)
