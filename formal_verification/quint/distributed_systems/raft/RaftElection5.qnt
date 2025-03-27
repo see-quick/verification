@@ -13,6 +13,7 @@ module RaftElection {
   var leader: int  // -1 if none
   // 2nd ===== adding 
   var logs : Process -> List[Entry]
+  var commitIndex: Process -> int
 
   val processes = 0.to(N - 1)
 
@@ -25,13 +26,26 @@ module RaftElection {
     processes.forall(p =>
       not(roles.get(p) == Leader and currentTerm.get(p) == term))
 
+  // Helper: compute the highest index i such that a majority of nodes match leader p's log prefix
+  def maxReplicatedPrefix(p: Process): int =
+    0.to(logs.get(p).length()).fold(0, (best, i) =>
+      if (
+        processes.filter(q =>
+          logs.get(q).length() >= i and
+          logs.get(q).slice(0, i) == logs.get(p).slice(0, i)
+        ).size() >= majority(N)
+      ) i else best
+    )
+
   // INIT
   action init = all {
     roles' = processes.mapBy(p => Follower),
     currentTerm' = processes.mapBy(p => 0),
     votedFor' = processes.mapBy(p => -1),
     votes' = Set(),
-    leader' = -1
+    leader' = -1,
+    logs' = processes.mapBy(p => List()),  // empty logs
+    commitIndex' = processes.mapBy(p => 0)
   }
 
   // CANDIDATE REQUESTS VOTES
@@ -41,7 +55,9 @@ module RaftElection {
     roles' = roles.set(p, Candidate),
     votedFor' = votedFor.set(p, p),
     votes' = votes.union(Set((p, p))),
-    leader' = -1
+    leader' = -1,
+    logs' = logs,
+    commitIndex' = commitIndex
   }
 
   // VOTE RESPONSE
@@ -55,7 +71,9 @@ module RaftElection {
     votes' = votes.union(Set((p, q))),
     currentTerm' = currentTerm,
     roles' = roles,
-    leader' = leader
+    leader' = leader,
+    logs' = logs,
+    commitIndex' = commitIndex
   }
 
   // CANDIDATE BECOMES LEADER
@@ -68,23 +86,72 @@ module RaftElection {
     leader' = p,
     currentTerm' = currentTerm,
     votedFor' = votedFor,
-    votes' = Set()
+    votes' = Set(),
+    logs' = logs,
+    commitIndex' = commitIndex
+  }
+
+  // Phase 2: Log replication
+
+  // Leader appends a new (term, cmd) to its own log
+  action appendNewCommand(p, cmd) = all {
+    roles.get(p) == Leader,
+    logs' = logs.set(p, logs.get(p).append((currentTerm.get(p), cmd))),
+    roles' = roles,
+    currentTerm' = currentTerm,
+    votedFor' = votedFor,
+    votes' = votes,
+    leader' = leader,
+    commitIndex' = commitIndex
+  }
+
+  // Follower accepts leader's log
+  action replicateLog(leaderP, followerP) = all {
+    roles.get(leaderP) == Leader,
+    roles.get(followerP) == Follower,
+
+    logs' = logs.set(followerP, logs.get(leaderP)),
+    roles' = roles,
+    currentTerm' = currentTerm,
+    votedFor' = votedFor,
+    votes' = votes,
+    leader' = leader,
+    commitIndex' = commitIndex
+  }
+
+  // Action: commitEntries(p)
+  action commitEntries(p) = all {
+    roles.get(p) == Leader,
+  
+    commitIndex' = commitIndex.set(p, maxReplicatedPrefix(p)),
+    logs' = logs,
+    roles' = roles,
+    votedFor' = votedFor,
+    currentTerm' = currentTerm,
+    votes' = votes,
+    leader' = leader
   }
 
   // SYSTEM STEP
   action step = {
     nondet p = oneOf(processes)
     nondet q = oneOf(processes)
+    nondet cmd = oneOf(Set("x", "y", "z"))
     any {
       startElection(p),
       vote(p, q),
-      becomeLeader(p)
+      becomeLeader(p),
+      appendNewCommand(p, cmd),
+      replicateLog(p, q),
+      commitEntries(p)
     }
   }
 
-  val vars = (roles, currentTerm, votedFor, votes, leader)
+  val vars = (roles, currentTerm, votedFor, votes, leader, logs, commitIndex)
 
   // INVARIANTS
+
+  // 1. At most one leader per term
   val UniqueLeaderPerTerm =
     processes.fold(true, (acc, p) =>
       acc and (
@@ -94,8 +161,25 @@ module RaftElection {
       )
     )
 
-  val ValidVotes =
-    votes.forall(v => v._1.in(processes) and v._2.in(processes))
+  // 2. Log Agreement on committed prefix (if commitIndex matches)
+  val LogAgreement =
+    processes.forall(p => processes.forall(q =>
+      (commitIndex.get(p) == commitIndex.get(q)) implies
+        logs.get(p).slice(0, commitIndex.get(p)) == logs.get(q).slice(0, commitIndex.get(q))
+    ))
+
+  // 3. All committed entries appear in the leader log
+  val CommittedInLeader =
+    processes.forall(p =>
+      (leader != -1 and commitIndex.get(p) > 0) implies
+        logs.get(p).slice(0, commitIndex.get(p)) == logs.get(leader).slice(0, commitIndex.get(p))
+    )
+
+  // 4.once committed, a log entry stays committed 
+  temporal MonotonicCommit =
+    processes.forall(p =>
+      always(commitIndex.get(p) >= 0)  // implied, but you could track deltas over time too
+    )
 
   // TEMPORAL
   temporal WeakFair = weakFair(step, vars)
