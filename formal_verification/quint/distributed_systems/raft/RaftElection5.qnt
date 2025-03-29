@@ -160,8 +160,10 @@ module RaftElection {
   
     // Ensure that the follower has an entry at prevIndex
     // and that it matches the leader's entry at the same index
-    prevIndex >= 0 and prevIndex < leaderLog.length() and
-      leaderLog[prevIndex] == followerLog[prevIndex]
+    prevIndex >= 0 and 
+    prevIndex < followerLog.length() and
+    prevIndex < leaderLog.length() and
+    leaderLog[prevIndex] == followerLog[prevIndex]
   
   // Constructs a new follower log by combining the leader's log up to `prevIndex`
   // with the leader’s suffix beyond that point.
@@ -169,9 +171,16 @@ module RaftElection {
     val leaderLog = logs.get(leaderP)
     val followerLog = logs.get(followerP)
     val prevIndex = followerLog.length() - 1
-    logs.get(leaderP).slice(0, prevIndex + 1)
-      .concat(
-        logs.get(leaderP).slice(prevIndex + 1, logs.get(leaderP).length()))
+
+    if (
+      prevIndex < 0 or
+      leaderLog.length() == 0 or
+      prevIndex + 1 > leaderLog.length()
+    )
+      followerLog
+    else
+      leaderLog.slice(0, prevIndex + 1)
+        .concat(leaderLog.slice(prevIndex + 1, leaderLog.length()))
 
   // INIT
   action init = all {
