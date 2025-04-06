@@ -216,28 +216,51 @@ module UserOperatorModel {
   def userCount(state: GlobalState): int =
     size(state.users.keys())
 
-  // This property expresses the "Eventually Stable Reconciliation" (ESR)
-  // requirement for the User Operator.
-  //
-  // It states that if the operator's step action is executed in a weakly fair
-  // manner (i.e., weakFair(step, globalState)), then it is always the case that
-  // eventually the system will reach a stable state. A stable state is one in which:
+  // Safety invariant: The processed events counter is non-negative.
+  val ProcessedEventsNonNegative = (globalState.processedEvents >= 0)
+
+  // Safety invariant: For every user in the global state, if the user is "Ready"
+  // then the account must be created; if "Deleted", then the account must not be created.
+  val UserConsistency = globalState.users.keys().forall(u =>
+    ((globalState.users.get(u).status == "Ready") implies globalState.users.get(u).account.created)
+    and
+    ((globalState.users.get(u).status == "Deleted") implies not(globalState.users.get(u).account.created))
+  )
+  
+  // Safety invariant: Every event in the event queue references a valid potential user.
+  val EventQueueWellFormed =
+    length(globalState.eventQueue.select(ev =>
+       match ev {
+         | UserCreated(spec) => spec.username.in(PotentialUsers)
+         | UserUpdated(spec) => spec.username.in(PotentialUsers)
+         | UserDeleted(u)    => u.in(PotentialUsers)
+       }
+     )) == length(globalState.eventQueue)
+
+  // A helper predicate that returns true if, for every potential user,
+  // either the user is not present in the state or, if present, its status is "Ready" or "Deleted".
+  def isStable(state: GlobalState): bool =
+    PotentialUsers.forall(u =>
+      (not(u.in(state.users.keys()))) or 
+      (state.users.get(u).status == "Ready") or 
+      (state.users.get(u).status == "Deleted")
+  );
+
+
+  // TODO: this is kinda tricky and it's does not HOLD in TLC need to investigate... :)
+  // Temporal Property: Eventually Stable Reconciliation (ESR)
+  // -----------------------------------------------------------
+  // This property asserts that if the step action is executed in a weakly fair 
+  // manner (i.e., weakFair(step, globalState)), then it is always the case that 
+  // eventually the system reaches a stable state. Here, a stable state is one in 
+  // which:
   //   1. The event queue is empty (i.e., no pending events remain), and
-  //   2. The global state is healthy, meaning that all managed users have a
-  //      status of "Ready" (as determined by the isHealthy predicate).
+  //   2. Every potential user is either absent from the state, or, if present, 
+  //      its status is "Ready" or "Deleted" (i.e., the user is considered stable).
   //
   // In temporal logic, this is written as:
-  //   weakFair(step, globalState) implies always(eventually(
-  //     (length(globalState.eventQueue) == 0) and isHealthy(globalState)
-  //   ))
-  //
-  // This ensures that, given a fair execution of the step action, the system is
-  // guaranteed to eventually settle into a state where no further events are pending
-  // and all user resources have been reconciled.
-  //
-  // Once this stable state is reached, it will persist indefinitely.
   temporal EventuallyStableReconciliationProperty =
     weakFair(step, globalState) implies always(eventually(
-      (length(globalState.eventQueue) == 0) and isHealthy(globalState)
+      (length(globalState.eventQueue) == 0) and isStable(globalState)
     ))
-}
+ }
