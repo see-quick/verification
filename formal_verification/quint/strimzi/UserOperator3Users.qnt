@@ -1,5 +1,4 @@
 module UserOperator3Users {
-
   // This module instantiates the UserOperatorModel with three potential users.
   import UserOperatorModel(
             PotentialUsers = Set("Alice", "Bob", "Carol")
@@ -8,11 +7,10 @@ module UserOperator3Users {
 
 module UserOperatorModel {
 
-   // ============================================================================
-   // MODEL PARAMETERS
-   // ============================================================================
-   // We assume a x of potential users (defined outside of this model :)
-   const PotentialUsers: Set[str]
+  // ============================================================================
+  // MODEL PARAMETERS
+  // ============================================================================
+  const PotentialUsers: Set[str]
 
   // ============================================================================
   // TYPE ALIASES
@@ -35,16 +33,16 @@ module UserOperatorModel {
   type UserResource = {
     spec: KafkaUserSpec,
     account: UserAccount,
-    status: str
+    status: str   // "Pending", "Ready", "Error", or "Deleted"
   }
+
+  // ============================================================================
   // EVENT MODEL
-  // ----------------------------------------------------------------------------
-  // Events represent changes to KafkaUser resources. They are used to drive the
-  // operator's reconciliation loop.
+  // ============================================================================
   type Event =
     | UserCreated(KafkaUserSpec)
     | UserUpdated(KafkaUserSpec)
-    | UserDeleted(str)   // deletion event carries the username
+    | UserDeleted(str)
 
   // ============================================================================
   // GLOBAL STATE
@@ -69,7 +67,7 @@ module UserOperatorModel {
     globalState' = { users: Map(), eventQueue: [], processedEvents: 0 }
   }
 
-   // ============================================================================
+  // ============================================================================
   // ACTIONS FOR GENERATING EVENTS
   // ============================================================================
   // Each action appends its corresponding event to the eventQueue.
@@ -84,7 +82,9 @@ module UserOperatorModel {
   action updateUser(u) = all {
     if (u.in(globalState.users.keys()))
       globalState' = {
-        globalState.with("eventQueue", globalState.eventQueue.concat([UserUpdated({ username: u, roles: globalState.users.get(u).spec.roles.concat(["admin"]) })]))
+        globalState.with("eventQueue", globalState.eventQueue.concat(
+          [UserUpdated({ username: u, roles: globalState.users.get(u).spec.roles.concat(["admin"]) })]
+        ))
       }
     else
       // just ignore if user not exist
@@ -130,14 +130,18 @@ module UserOperatorModel {
     match ev {
       | UserCreated(spec) =>
           if (not(user.account.created)) {
-            spec: spec,
-            account: { username: spec.username, roles: spec.roles, created: true },
-            status: "Ready"
+            { spec: spec,
+              account: { username: spec.username, roles: spec.roles, created: true },
+              status: "Ready" }
           } else user
       | UserUpdated(spec) =>
-          { spec: spec,
-            account: { username: spec.username, roles: spec.roles, created: user.account.created },
-            status: "Ready" }
+          if (user.status == "Deleted")
+            // Ignore update events for users already deleted.
+            user
+          else
+            { spec: spec,
+              account: { username: spec.username, roles: spec.roles, created: user.account.created },
+              status: "Ready" }
       | UserDeleted(username) =>
           { spec: user.spec,
             account: { username: user.account.username, roles: [], created: false },
@@ -191,16 +195,8 @@ module UserOperatorModel {
     }
 
   // ============================================================================
-  // HELPER FUNCTIONS
-  // ----------------------------------------------------------------------------
-  // lastState returns the last element of a non-empty list of GlobalState.
-  def lastState(L: List[GlobalState]): GlobalState =
-      L.foldl(head(L), (s, x) => x)
-
-  // ============================================================================
   // HEALTH, READINESS, AND METRICS PREDICATES
-  // ----------------------------------------------------------------------------
-  // matchUser checks whether an account matches the desired spec.
+  // ============================================================================
   def matchUser(spec: KafkaUserSpec, account: UserAccount): bool =
     (account.username == spec.username) and (account.roles == spec.roles) and account.created
 
@@ -241,8 +237,8 @@ module UserOperatorModel {
   // either the user is not present in the state or, if present, its status is "Ready" or "Deleted".
   def isStable(state: GlobalState): bool =
     PotentialUsers.forall(u =>
-      (not(u.in(state.users.keys()))) or 
-      (state.users.get(u).status == "Ready") or 
+      (not(u.in(state.users.keys()))) or
+      (state.users.get(u).status == "Ready") or
       (state.users.get(u).status == "Deleted")
   );
 
@@ -263,4 +259,4 @@ module UserOperatorModel {
     weakFair(step, globalState) implies always(eventually(
       (length(globalState.eventQueue) == 0) and isStable(globalState)
     ))
- }
+}
