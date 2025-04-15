@@ -70,33 +70,26 @@ module UserOperatorModel {
   // ============================================================================
   // ACTIONS FOR GENERATING EVENTS
   // ============================================================================
+  
+  // helper for queueEvent
+  def queueEvent(ev: Event): GlobalState =
+    { ...globalState, eventQueue: globalState.eventQueue.append(ev) }
+
   // Each action appends its corresponding event to the eventQueue.
   // Action: createUser appends a creation event for user u.
-  action createUser(u) = all {
-    globalState' = {
-      globalState.with("eventQueue", globalState.eventQueue.concat([UserCreated({ username: u, roles: ["user"] })]))
-    }
-  }
+  action createUser(u) = globalState' = queueEvent(UserCreated({ username: u, roles: ["user"] }))
+ // Action: deleteUser appends a deletion event for user u.
+  action deleteUser(u) = globalState' = queueEvent(UserDeleted(u)) 
 
   // Action: updateUser appends an update event for user u.
-  action updateUser(u) = all {
+  action updateUser(u) =
     if (u.in(globalState.users.keys()))
-      globalState' = {
-        globalState.with("eventQueue", globalState.eventQueue.concat(
-          [UserUpdated({ username: u, roles: globalState.users.get(u).spec.roles.concat(["admin"]) })]
-        ))
-      }
+      globalState' = queueEvent(UserUpdated({
+        username: u,
+        roles: globalState.users.get(u).spec.roles.append("admin")
+      }))
     else
-      // just ignore if user not exist
       globalState' = globalState
-  }
-
-  // Action: deleteUser appends a deletion event for user u.
-  action deleteUser(u) = all {
-    globalState' = {
-      globalState.with("eventQueue", globalState.eventQueue.concat([UserDeleted(u)]))
-    }
-  }
 
   // ============================================================================
   // STEP FUNCTION
@@ -104,22 +97,15 @@ module UserOperatorModel {
   // The step action nondeterministically chooses between generating an event and processing an event.
   // If the choice is "reconcile" but the eventQueue is empty, it falls back to generating an event.
   action step = {
-    nondet choice = oneOf(Set("create", "update", "delete", "reconcile"))
-    if (choice == "create") {
-      nondet u = PotentialUsers.oneOf()
-      createUser(u)
-    } else if (choice == "update") {
-      nondet u = PotentialUsers.oneOf()
-      updateUser(u)
-    } else if (choice == "delete") {
-      nondet u = PotentialUsers.oneOf()
-      deleteUser(u)
-    } else { // "reconcile"
-      if (length(globalState.eventQueue) > 0)
-        globalState' = processEvent({ globalState.with("eventQueue", tail(globalState.eventQueue)) }, head(globalState.eventQueue))
-      else
+    nondet u = PotentialUsers.oneOf()
+    any { 
+      createUser(u),
+      updateUser(u),
+      deleteUser(u),
+      if (length(globalState.eventQueue) > 0) 
+        globalState' = processEvent({ ... globalState, eventQueue : tail(globalState.eventQueue) }, head(globalState.eventQueue))
+      else 
         globalState' = globalState
-        // do nothing
     }
   }
 
