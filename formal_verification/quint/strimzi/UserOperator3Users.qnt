@@ -132,7 +132,7 @@ module UserOperatorModel {
           if (not(user.account.created)) {
             { spec: spec,
               account: { username: spec.username, roles: spec.roles, created: true },
-              status: "Ready" }
+              status: if (spec.username.in(globalState.secrets)) "Ready" else "Pending" }
           } else user
       | UserUpdated(spec) =>
           if (user.status == "Deleted")
@@ -141,7 +141,7 @@ module UserOperatorModel {
           else
             { spec: spec,
               account: { username: spec.username, roles: spec.roles, created: user.account.created },
-              status: "Ready" }
+              status: if (spec.username.in(globalState.secrets)) "Ready" else "Pending" }
       | UserDeleted(username) =>
           { spec: user.spec,
             account: { username: user.account.username, roles: [], created: false },
@@ -152,7 +152,7 @@ module UserOperatorModel {
            else
              { spec: user.spec,
                account: { username: user.account.username, roles: user.account.roles, created: user.account.created },
-               status: "Ready" }  // secret appeared or changed → re-mark as Ready
+               status: if (username.in(globalState.secrets)) "Ready" else "Pending" }  // secret appeared or changed → re-mark as Ready
 
        | SecretUpdated(username) =>
            if (user.status == "Deleted")
@@ -160,7 +160,7 @@ module UserOperatorModel {
            else
              { spec: user.spec,
                account: { username: user.account.username, roles: user.account.roles, created: user.account.created },
-               status: "Ready" }
+               status: if (username.in(globalState.secrets)) "Ready" else "Pending" }
 
        | SecretDeleted(username) =>
            { spec: user.spec,
@@ -304,7 +304,11 @@ module UserOperatorModel {
 
   val ReadyUsersMustHaveSecrets =
     globalState.users.keys().forall(u =>
-      (globalState.users.get(u).status == "Ready") implies globalState.secrets.contains(u)
+      (globalState.users.get(u).status == "Ready") implies 
+        (globalState.users.get(u).account.created 
+            and 
+          globalState.secrets.contains(u)
+        )
     )
 
   // A helper predicate that returns true if, for every potential user,
