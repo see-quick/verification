@@ -43,6 +43,9 @@ module UserOperatorModel {
     | UserCreated(KafkaUserSpec)
     | UserUpdated(KafkaUserSpec)
     | UserDeleted(str)
+    | SecretAdded(str)
+    | SecretUpdated(str)
+    | SecretDeleted(str)
 
   // ============================================================================
   // GLOBAL STATE
@@ -50,6 +53,7 @@ module UserOperatorModel {
   // GlobalState encapsulates the entire state of the operator.
   type GlobalState = {
     users: str -> UserResource,
+    secrets: Set[str],
     eventQueue: List[Event],
     processedEvents: int
   }
@@ -64,7 +68,7 @@ module UserOperatorModel {
   // INITIALIZATION ACTION
   // ============================================================================
   action init = all {
-    globalState' = { users: Map(), eventQueue: [], processedEvents: 0 }
+    globalState' = { users: Map(), secrets : Set(), eventQueue: [], processedEvents: 0 }
   }
 
   // ============================================================================
@@ -91,6 +95,13 @@ module UserOperatorModel {
     else
       globalState' = globalState
 
+  // Action: secretAdded appends a secret added event for user u.
+  action secretAdded(u) = globalState' = queueEvent(SecretAdded(u))
+  // Action: secretUpdated appends a secret updated event for user u.
+  action secretUpdated(u) = globalState' = queueEvent(SecretUpdated(u))
+  // Action: secretDeleted appends a secret deleted event for user u.
+  action secretDeleted(u) = globalState' = queueEvent(SecretDeleted(u))
+  
   // ============================================================================
   // STEP FUNCTION
   // ============================================================================
@@ -102,6 +113,9 @@ module UserOperatorModel {
       createUser(u),
       updateUser(u),
       deleteUser(u),
+      secretAdded(u),
+      secretUpdated(u),
+      secretDeleted(u),
       if (length(globalState.eventQueue) > 0) 
         globalState' = processEvent({ ... globalState, eventQueue : tail(globalState.eventQueue) }, head(globalState.eventQueue))
       else 
@@ -132,6 +146,26 @@ module UserOperatorModel {
           { spec: user.spec,
             account: { username: user.account.username, roles: [], created: false },
             status: "Deleted" }
+      | SecretAdded(username) =>
+           if (user.status == "Deleted")
+             user
+           else
+             { spec: user.spec,
+               account: { username: user.account.username, roles: user.account.roles, created: user.account.created },
+               status: "Ready" }  // secret appeared or changed → re-mark as Ready
+
+       | SecretUpdated(username) =>
+           if (user.status == "Deleted")
+             user
+           else
+             { spec: user.spec,
+               account: { username: user.account.username, roles: user.account.roles, created: user.account.created },
+               status: "Ready" }
+
+       | SecretDeleted(username) =>
+           { spec: user.spec,
+             account: { username: user.account.username, roles: user.account.roles, created: false },
+             status: "Deleted" }
     }
 
   def processEvent(state: GlobalState, ev: Event): GlobalState =
@@ -140,6 +174,7 @@ module UserOperatorModel {
           if (spec.username.in(state.users.keys()))
             {
               users: state.users.put(spec.username, reconcileUser(state.users.get(spec.username), ev)),
+              secrets: state.secrets.union(Set(spec.username)),
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
@@ -151,12 +186,14 @@ module UserOperatorModel {
                         status: "Ready"
               }),
               eventQueue: state.eventQueue,
+              secrets: state.secrets.union(Set(spec.username)),
               processedEvents: state.processedEvents + 1
             }
       | UserUpdated(spec) =>
           if (spec.username.in(state.users.keys()))
             {
               users: state.users.put(spec.username, reconcileUser(state.users.get(spec.username), ev)),
+              secrets: state.secrets,
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
@@ -167,6 +204,7 @@ module UserOperatorModel {
                         account: { username: spec.username, roles: spec.roles, created: true },
                         status: "Ready"
               }),
+              secrets: state.secrets.union(Set(spec.username)),
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
@@ -174,11 +212,40 @@ module UserOperatorModel {
           if (username.in(state.users.keys()))
             {
               users: state.users.put(username, reconcileUser(state.users.get(username), ev)),
+              secrets: state.secrets.exclude(Set(username)),
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
           else state
-    }
+      | SecretAdded(username) =>
+          if (username.in(state.users.keys()) and state.users.get(username).status != "Deleted")
+            {
+              users: state.users.put(username, reconcileUser(state.users.get(username), UserUpdated({ username: username, roles: ["user"] }))),
+              secrets: state.secrets.union(Set(username)),
+              eventQueue: state.eventQueue,
+              processedEvents: state.processedEvents + 1
+            }
+          else state
+      | SecretUpdated(username) =>
+          if (username.in(state.users.keys()))
+            {
+              users: state.users.put(username, reconcileUser(state.users.get(username), UserUpdated({ username: username, roles: ["user"] }))),
+              secrets: state.secrets,
+              eventQueue: state.eventQueue,
+              processedEvents: state.processedEvents + 1
+            }
+          else state
+
+      | SecretDeleted(username) =>
+          if (username.in(state.users.keys()))
+            {
+              users: state.users.put(username, reconcileUser(state.users.get(username), UserDeleted(username))),
+              secrets: state.secrets.exclude(Set(username)),
+              eventQueue: state.eventQueue,
+              processedEvents: state.processedEvents + 1
+            }
+          else state
+  }
 
   // ============================================================================
   // HEALTH, READINESS, AND METRICS PREDICATES
@@ -216,8 +283,29 @@ module UserOperatorModel {
          | UserCreated(spec) => spec.username.in(PotentialUsers)
          | UserUpdated(spec) => spec.username.in(PotentialUsers)
          | UserDeleted(u)    => u.in(PotentialUsers)
+         | SecretAdded(u)    => u.in(PotentialUsers)
+         | SecretUpdated(u)  => u.in(PotentialUsers)
+         | SecretDeleted(u)  => u.in(PotentialUsers)
        }
      )) == length(globalState.eventQueue)
+
+   // A secret exists if and only if the user account is marked as created.
+   val SecretsConsistency =
+      globalState.users.keys().forall(u =>
+        (globalState.users.get(u).account.created == globalState.secrets.contains(u))
+      )
+
+  // extra invariant -> guard secret only orphans 
+  val NoSecretsForDeletedUsers =
+    globalState.users.keys().forall(u =>
+      globalState.users.get(u).status == "Deleted"
+        implies not(globalState.secrets.contains(u))
+    )
+
+  val ReadyUsersMustHaveSecrets =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).status == "Ready") implies globalState.secrets.contains(u)
+    )
 
   // A helper predicate that returns true if, for every potential user,
   // either the user is not present in the state or, if present, its status is "Ready" or "Deleted".
@@ -242,7 +330,7 @@ module UserOperatorModel {
   //
   // In temporal logic, this is written as:
   temporal EventuallyStableReconciliationProperty =
-    weakFair(step, globalState) implies always(eventually(
+    strongFair(step, globalState) implies always(eventually(
       (length(globalState.eventQueue) == 0) and isStable(globalState)
     ))
 }
