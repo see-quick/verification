@@ -33,15 +33,23 @@ module UserOperatorModel {
   type UserResource = {
     spec: KafkaUserSpec,
     account: UserAccount,
+    quotas: KafkaUserQuotas,    // quotas :)
     status: str   // "Pending", "Ready", "Error", or "Deleted"
   }
+
+  type KafkaUserQuotas = {
+    producerByteRate: int,
+    consumerByteRate: int,
+    requestPercentage: int,
+    controllerMutationRate: int    // should be real but Quint has only int :)
+  }  
 
   // ============================================================================
   // EVENT MODEL
   // ============================================================================
   type Event =
-    | UserCreatedWithSecret(KafkaUserSpec)
-    | UserUpdated(KafkaUserSpec)
+    | UserCreatedWithSecret(UserResource)
+    | UserUpdated(UserResource)
     | UserDeleted(str)
 
   // ============================================================================
@@ -65,7 +73,12 @@ module UserOperatorModel {
   // INITIALIZATION ACTION
   // ============================================================================
   action init = all {
-    globalState' = { users: Map(), secrets : Set(), eventQueue: [], processedEvents: 0 }
+    globalState' = { 
+      users: Map(), 
+      secrets : Set(), 
+      eventQueue: [], 
+      processedEvents: 0
+    }
   }
 
   // ============================================================================
@@ -75,19 +88,53 @@ module UserOperatorModel {
   // helper for queueEvent
   def queueEvent(ev: Event): GlobalState =
     { ...globalState, eventQueue: globalState.eventQueue.append(ev) }
+ 
+  def newUser(u: str): UserResource =
+    { spec: { username: u, roles: ["user"] },
+      account: { username: u, roles: ["user"], created: false },
+      quotas: { producerByteRate: 0, consumerByteRate: 0, requestPercentage: 0, controllerMutationRate: 0 },
+      status: "Pending"
+    }
 
   // Each action appends its corresponding event to the eventQueue.
-  action createUser(u) = globalState' = queueEvent(UserCreatedWithSecret({ username: u, roles: ["user"] }))
+  action createUser(u) = globalState' = queueEvent(UserCreatedWithSecret(newUser(u)))
+  // Creates user with non-default quotas
+  action createUserWithQuotas(u) =
+    globalState' = queueEvent(
+      UserCreatedWithSecret({
+        spec: { username: u, roles: ["user"] },
+        account: { username: u, roles: ["user"], created: false },
+        quotas: { producerByteRate: 100, consumerByteRate: 200, requestPercentage: 50, controllerMutationRate: 5 },
+        status: "Pending"
+      })
+    )
+
   action deleteUser(u) = globalState' = queueEvent(UserDeleted(u))
 
   action updateUser(u) =
-      if (u.in(globalState.users.keys()))
-        globalState' = queueEvent(UserUpdated({
-          username: u,
-          roles: globalState.users.get(u).spec.roles.append("admin")
-        }))
-      else
-        globalState' = globalState
+    if (u.in(globalState.users.keys()))
+      globalState' = queueEvent(UserUpdated({
+        spec: { username: u, roles: globalState.users.get(u).spec.roles.append("admin") },
+        account: { username: u, roles: globalState.users.get(u).spec.roles.append("admin"), created: true },
+        quotas: globalState.users.get(u).quotas,
+        status: "Ready"
+      }))
+    else
+      globalState' = globalState
+
+   // Updates user quotas
+   action updateUserWithQuotas(u) =
+     if (u.in(globalState.users.keys()))
+       globalState' = queueEvent(
+         UserUpdated({
+           spec: globalState.users.get(u).spec,
+           account: globalState.users.get(u).account,
+           quotas: { producerByteRate: 500, consumerByteRate: 500, requestPercentage: 90, controllerMutationRate: 20 },
+           status: globalState.users.get(u).status
+         })
+       )
+     else
+       globalState' = globalState
 
   // ============================================================================
   // STEP FUNCTION
@@ -98,7 +145,9 @@ module UserOperatorModel {
     nondet u = PotentialUsers.oneOf()
     any {
       createUser(u),
+      createUserWithQuotas(u),
       updateUser(u),
+      updateUserWithQuotas(u),
       deleteUser(u),
       if (length(globalState.eventQueue) > 0)
         globalState' = processEvent({ ... globalState, eventQueue : tail(globalState.eventQueue) }, head(globalState.eventQueue))
@@ -112,61 +161,66 @@ module UserOperatorModel {
   // ============================================================================
   def reconcileUser(user: UserResource, ev: Event): UserResource =
     match ev {
-      | UserCreatedWithSecret(spec) =>
-        { spec: spec,
-          account: { username: spec.username, roles: spec.roles, created: true },
+      | UserCreatedWithSecret(cr) =>
+        { spec: cr.spec,
+          account: { username: cr.spec.username, roles: cr.spec.roles, created: true },
+          quotas: cr.quotas,
           status: "Ready" }
-      | UserUpdated(spec) =>
+      | UserUpdated(cr) =>
           if (user.status == "Deleted")
             // Ignore update events for users already deleted.
             user
           else
-            { spec: spec,
-              account: { username: spec.username, roles: spec.roles, created: spec.username.in(globalState.secrets) },
-              status: if (spec.username.in(globalState.secrets)) "Ready" else "Pending" }
+            { spec: cr.spec,
+              account: { username: cr.spec.username, roles: cr.spec.roles, created: cr.spec.username.in(globalState.secrets) },
+              quotas: cr.quotas,
+              status: if (cr.spec.username.in(globalState.secrets)) "Ready" else "Pending" }
       | UserDeleted(username) =>
           { spec: user.spec,
             account: { username: user.account.username, roles: [], created: false },
+            quotas: user.quotas, 
             status: "Deleted" }
     }
 
   def processEvent(state: GlobalState, ev: Event): GlobalState =
     match ev {
-      | UserCreatedWithSecret(spec) =>
-        if (spec.username.in(state.users.keys()))
+      | UserCreatedWithSecret(cr) =>
+        if (cr.spec.username.in(state.users.keys()))
           {
-            users: state.users.put(spec.username, reconcileUser(state.users.get(spec.username), ev)),
-            secrets: state.secrets.union(Set(spec.username)),
+            users: state.users.put(cr.spec.username, reconcileUser(state.users.get(cr.spec.username), ev)),
+            secrets: state.secrets.union(Set(cr.spec.username)),
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
         else
           {
-            users: state.users.put(spec.username, {
-                      spec: spec,
-                      account: { username: spec.username, roles: spec.roles, created: true },
+            users: state.users.put(cr.spec.username, {
+                      spec: cr.spec,
+                      account: { username: cr.spec.username, roles: cr.spec.roles, created: true },
+                      quotas: cr.quotas,
                       status: "Ready"
             }),
-            secrets: state.secrets.union(Set(spec.username)),
+            secrets: state.secrets.union(Set(cr.spec.username)),
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
-      | UserUpdated(spec) =>
-        if (spec.username.in(state.users.keys()))
+      | UserUpdated(cr) =>
+        if (cr.spec.username.in(state.users.keys()))
           {
-            users: state.users.put(spec.username, reconcileUser(state.users.get(spec.username), ev)),
+            users: state.users.put(cr.spec.username, reconcileUser(state.users.get(cr.spec.username), ev)),
             secrets: state.secrets,
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
         else
           {
-            users: state.users.put(spec.username, {
-                      spec: spec,
-                      account: { username: spec.username, roles: spec.roles, created: true },
+            users: state.users.put(cr.spec.username, {
+                      spec: cr.spec,
+                      account: { username: cr.spec.username, roles: cr.spec.roles, created: true },
+                      quotas : cr.quotas,
                       status: "Ready"
             }),
-            secrets: state.secrets.union(Set(spec.username)),
+            secrets: state.secrets.union(Set(cr.spec.username)),
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
@@ -214,8 +268,8 @@ module UserOperatorModel {
   val EventQueueWellFormed =
       length(globalState.eventQueue.select(ev =>
          match ev {
-           | UserCreatedWithSecret(spec) => spec.username.in(PotentialUsers)
-           | UserUpdated(spec) => spec.username.in(PotentialUsers)
+           | UserCreatedWithSecret(cr) => cr.spec.username.in(PotentialUsers)
+           | UserUpdated(cr) => cr.spec.username.in(PotentialUsers)
            | UserDeleted(u)    => u.in(PotentialUsers)
          }
        )) == length(globalState.eventQueue)
@@ -251,6 +305,22 @@ module UserOperatorModel {
         (state.users.get(u).status == "Deleted")
     )
 
+  // ========================================
+  // ========= QUOTAS INVARIANTS ============
+  // ========================================
+  val QuotasNonNegative =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).quotas.producerByteRate >= 0) and
+      (globalState.users.get(u).quotas.consumerByteRate >= 0) and
+      (globalState.users.get(u).quotas.requestPercentage >= 0) and
+      (globalState.users.get(u).quotas.controllerMutationRate >= 0)
+    )
+
+  val QuotasRequestPercentageValid =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).quotas.requestPercentage >= 0) and
+      (globalState.users.get(u).quotas.requestPercentage <= 100)
+    )
 
   // TODO: this is kinda tricky and it's does not HOLD in TLC need to investigate... :)
   // Temporal Property: Eventually Stable Reconciliation (ESR)
