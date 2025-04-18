@@ -15,34 +15,53 @@ module UserOperatorModel {
   // ============================================================================
   // TYPE ALIASES
   // ============================================================================
-  // KafkaUserSpec: the desired configuration for a user.
-  type KafkaUserSpec = {
-      username: str,
-      roles: List[str]
+  // Metadata is abstracted
+  type KafkaUserMetadata = {
+    name: str
+    // labels: str -> str  (abstracted out)
+    // annotations: str -> str (abstracted out)
   }
 
-  // The actual state of a user account.
-  type UserAccount = {
-    username: str,
-    roles: List[str],
-    created: bool
-  }
-
-  // A complete KafkaUser resource that holds both the desired spec and the actual account.
-  // The 'status' field can be "Pending", "Ready", "Error", or "Deleted".
-  type UserResource = {
-    spec: KafkaUserSpec,
-    account: UserAccount,
-    quotas: KafkaUserQuotas,    // quotas :)
-    status: str   // "Pending", "Ready", "Error", or "Deleted"
-  }
+  // TODO: // (abstracted out for now)
+  //type KafkaUserAuthentication = {
+  //  type: str
+  // password, secrets etc. are skipped
+  // }
 
   type KafkaUserQuotas = {
     producerByteRate: int,
     consumerByteRate: int,
     requestPercentage: int,
     controllerMutationRate: int    // should be real but Quint has only int :)
-  }  
+  }
+
+  type KafkaUserSpec = {
+    // authentication: KafkaUserAuthentication,    // (abstracted out)
+    // authorization: KafkaUserAuthorization,      // (abstracted out)
+    quotas: KafkaUserQuotas
+  }
+
+  type KafkaUserStatusCondition = {
+  //  type: str,                  // (abstracted out)
+    status: str,
+  //  lastTransitionTime: str,    // (abstracted out)
+  //  reason: str,                // (abstracted out)
+  //  message: str                // (abstracted out)
+  }
+
+  type KafkaUserStatus = {
+    conditions: KafkaUserStatusCondition // (abstracted out just one status not a list :) )
+  //  observedGeneration: int,                    // (abstracted out)
+  //  username: str,                              // (abstracted out)
+  //  secret: str                                 // (abstracted out)
+  }
+
+  // A complete KafkaUser resource that holds both the desired spec and the actual account.
+  type UserResource = {
+    metadata: KafkaUserMetadata,
+    spec: KafkaUserSpec,
+    status: KafkaUserStatus  //   "Pending", "Ready", "Error", or "Deleted"
+  }
 
   // ============================================================================
   // EVENT MODEL
@@ -90,10 +109,17 @@ module UserOperatorModel {
     { ...globalState, eventQueue: globalState.eventQueue.append(ev) }
  
   def newUser(u: str): UserResource =
-    { spec: { username: u, roles: ["user"] },
-      account: { username: u, roles: ["user"], created: false },
-      quotas: { producerByteRate: 0, consumerByteRate: 0, requestPercentage: 0, controllerMutationRate: 0 },
-      status: "Pending"
+    {
+      metadata: { name: u },
+      spec: {
+        quotas: {
+          producerByteRate: 0,
+          consumerByteRate: 0,
+          requestPercentage: 0,
+          controllerMutationRate: 0
+        }
+      },
+      status: { conditions: { status: "Pending" } }
     }
 
   // Each action appends its corresponding event to the eventQueue.
@@ -102,10 +128,17 @@ module UserOperatorModel {
   action createUserWithQuotas(u) =
     globalState' = queueEvent(
       UserCreatedWithSecret({
-        spec: { username: u, roles: ["user"] },
-        account: { username: u, roles: ["user"], created: false },
-        quotas: { producerByteRate: 100, consumerByteRate: 200, requestPercentage: 50, controllerMutationRate: 5 },
-        status: "Pending"
+        metadata: { name: u },
+        spec: {
+          quotas: {
+            producerByteRate: 100,
+            consumerByteRate: 200,
+            requestPercentage: 50,
+            controllerMutationRate: 5
+          }
+        },
+        status: { conditions: { status: "Pending" } }
+
       })
     )
 
@@ -113,12 +146,13 @@ module UserOperatorModel {
 
   action updateUser(u) =
     if (u.in(globalState.users.keys()))
-      globalState' = queueEvent(UserUpdated({
-        spec: { username: u, roles: globalState.users.get(u).spec.roles.append("admin") },
-        account: { username: u, roles: globalState.users.get(u).spec.roles.append("admin"), created: true },
-        quotas: globalState.users.get(u).quotas,
-        status: "Ready"
-      }))
+      globalState' = queueEvent(
+        UserUpdated({
+          metadata: { name: u },
+          spec: globalState.users.get(u).spec,
+          status: { conditions: { status: "Ready" } }
+        })
+      )
     else
       globalState' = globalState
 
@@ -127,10 +161,16 @@ module UserOperatorModel {
      if (u.in(globalState.users.keys()))
        globalState' = queueEvent(
          UserUpdated({
-           spec: globalState.users.get(u).spec,
-           account: globalState.users.get(u).account,
-           quotas: { producerByteRate: 500, consumerByteRate: 500, requestPercentage: 90, controllerMutationRate: 20 },
-           status: globalState.users.get(u).status
+           metadata: { name: u },
+           spec: {
+             quotas: {
+               producerByteRate: 500,
+               consumerByteRate: 500,
+               requestPercentage: 90,
+               controllerMutationRate: 20
+             }
+           },
+           status: { conditions: { status: "Ready" } }
          })
        )
      else
@@ -162,68 +202,72 @@ module UserOperatorModel {
   def reconcileUser(user: UserResource, ev: Event): UserResource =
     match ev {
       | UserCreatedWithSecret(cr) =>
-        { spec: cr.spec,
-          account: { username: cr.spec.username, roles: cr.spec.roles, created: true },
-          quotas: cr.quotas,
-          status: "Ready" }
+              {
+                metadata: cr.metadata,
+                spec: cr.spec,
+                status: { conditions: { status: "Ready" } }
+              }
       | UserUpdated(cr) =>
-          if (user.status == "Deleted")
-            // Ignore update events for users already deleted.
-            user
-          else
-            { spec: cr.spec,
-              account: { username: cr.spec.username, roles: cr.spec.roles, created: cr.spec.username.in(globalState.secrets) },
-              quotas: cr.quotas,
-              status: if (cr.spec.username.in(globalState.secrets)) "Ready" else "Pending" }
+              if (user.status.conditions.status == "Deleted")
+                user
+              else
+                {
+                  metadata: cr.metadata,
+                  spec: cr.spec,
+                  status: {
+                    conditions: {
+                      status: if (cr.metadata.name.in(globalState.secrets)) "Ready" else "Pending"
+                    }
+                  }
+                }
       | UserDeleted(username) =>
-          { spec: user.spec,
-            account: { username: user.account.username, roles: [], created: false },
-            quotas: user.quotas, 
-            status: "Deleted" }
+              {
+                metadata: user.metadata,
+                spec: user.spec,
+                status: { conditions: { status: "Deleted" } }
+              }
     }
 
   def processEvent(state: GlobalState, ev: Event): GlobalState =
     match ev {
       | UserCreatedWithSecret(cr) =>
-        if (cr.spec.username.in(state.users.keys()))
+        if (cr.metadata.name.in(state.users.keys()))
           {
-            users: state.users.put(cr.spec.username, reconcileUser(state.users.get(cr.spec.username), ev)),
-            secrets: state.secrets.union(Set(cr.spec.username)),
+            users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
+            secrets: state.secrets.union(Set(cr.metadata.name)),
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
         else
           {
-            users: state.users.put(cr.spec.username, {
-                      spec: cr.spec,
-                      account: { username: cr.spec.username, roles: cr.spec.roles, created: true },
-                      quotas: cr.quotas,
-                      status: "Ready"
+            users: state.users.put(cr.metadata.name, {
+              metadata: cr.metadata,
+              spec: cr.spec,
+              status: { conditions: { status: "Ready" } }
             }),
-            secrets: state.secrets.union(Set(cr.spec.username)),
+            secrets: state.secrets.union(Set(cr.metadata.name)),
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
       | UserUpdated(cr) =>
-        if (cr.spec.username.in(state.users.keys()))
-          {
-            users: state.users.put(cr.spec.username, reconcileUser(state.users.get(cr.spec.username), ev)),
-            secrets: state.secrets,
-            eventQueue: state.eventQueue,
-            processedEvents: state.processedEvents + 1
-          }
-        else
-          {
-            users: state.users.put(cr.spec.username, {
-                      spec: cr.spec,
-                      account: { username: cr.spec.username, roles: cr.spec.roles, created: true },
-                      quotas : cr.quotas,
-                      status: "Ready"
-            }),
-            secrets: state.secrets.union(Set(cr.spec.username)),
-            eventQueue: state.eventQueue,
-            processedEvents: state.processedEvents + 1
-          }
+          if (cr.metadata.name.in(state.users.keys()))
+            {
+              users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
+              secrets: state.secrets,
+              eventQueue: state.eventQueue,
+              processedEvents: state.processedEvents + 1
+            }
+          else
+            {
+              users: state.users.put(cr.metadata.name, {
+                metadata: cr.metadata,
+                spec: cr.spec,
+                status: { conditions: { status: "Ready" } }
+              }),
+              secrets: state.secrets.union(Set(cr.metadata.name)),
+              eventQueue: state.eventQueue,
+              processedEvents: state.processedEvents + 1
+            }
       | UserDeleted(username) =>
           if (username.in(state.users.keys()))
             {
@@ -232,94 +276,75 @@ module UserOperatorModel {
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
-          else state
+          else
+            state
   }
 
-  // ============================================================================
-  // HEALTH, READINESS, AND METRICS PREDICATES
-  // ============================================================================
-  def matchUser(spec: KafkaUserSpec, account: UserAccount): bool =
-    (account.username == spec.username) and (account.roles == spec.roles) and account.created
-
-  // isHealthy returns true if every managed user is in the "Ready" status.
-  def isHealthy(state: GlobalState): bool =
-    state.users.keys().forall(key => state.users.get(key).status == "Ready")
-
-  // isReady returns true if at least one event has been processed.
-  def isReady(state: GlobalState): bool =
-    state.processedEvents > 0
-
-  // userCount returns the number of managed KafkaUser resources.
-  def userCount(state: GlobalState): int =
-    size(state.users.keys())
-
-  // Safety invariant: The processed events counter is non-negative.
-  val ProcessedEventsNonNegative = (globalState.processedEvents >= 0)
-
-  // Safety invariant: For every user in the global state, if the user is "Ready"
-  // then the account must be created; if "Deleted", then the account must not be created.
+  // ========================================
+  // ============== INVARIANTS ==============
+  // ========================================
   val UserConsistency = globalState.users.keys().forall(u =>
-    ((globalState.users.get(u).status == "Ready") implies globalState.users.get(u).account.created)
+    ((globalState.users.get(u).status.conditions.status == "Ready") implies globalState.secrets.contains(u))
     and
-    ((globalState.users.get(u).status == "Deleted") implies not(globalState.users.get(u).account.created))
+    ((globalState.users.get(u).status.conditions.status == "Deleted") implies not(globalState.secrets.contains(u)))
   )
+
+  val SecretsConsistency =
+    globalState.users.keys().forall(u =>
+      (globalState.secrets.contains(u)) ==
+      (globalState.users.get(u).status.conditions.status == "Ready")
+    )
+
+  val NoSecretsForDeletedUsers =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).status.conditions.status == "Deleted") implies
+      not(globalState.secrets.contains(u))
+    )
+
+  val ReadyUsersMustHaveSecrets =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).status.conditions.status == "Ready") implies
+      globalState.secrets.contains(u)
+    )
 
   // Safety invariant: Every event in the event queue references a valid potential user.
   val EventQueueWellFormed =
       length(globalState.eventQueue.select(ev =>
          match ev {
-           | UserCreatedWithSecret(cr) => cr.spec.username.in(PotentialUsers)
-           | UserUpdated(cr) => cr.spec.username.in(PotentialUsers)
+           | UserCreatedWithSecret(cr) => cr.metadata.name.in(PotentialUsers)
+           | UserUpdated(cr) => cr.metadata.name.in(PotentialUsers)
            | UserDeleted(u)    => u.in(PotentialUsers)
          }
        )) == length(globalState.eventQueue)
-
-   // A secret exists if and only if the user account is marked as created.
-   val SecretsConsistency =
-     globalState.users.keys().forall(u =>
-       (globalState.users.get(u).account.created == globalState.secrets.contains(u))
-     )
-
-  // extra invariant -> guard secret only orphans
-  val NoSecretsForDeletedUsers =
-      globalState.users.keys().forall(u =>
-        globalState.users.get(u).status == "Deleted"
-          implies not(globalState.secrets.contains(u))
-      )
-
-  val ReadyUsersMustHaveSecrets =
-      globalState.users.keys().forall(u =>
-        (globalState.users.get(u).status == "Ready") implies
-          (globalState.users.get(u).account.created
-              and
-            globalState.secrets.contains(u)
-          )
-      )
-
-  // A helper predicate that returns true if, for every potential user,
-  // either the user is not present in the state or, if present, its status is "Ready" or "Deleted".
-  def isStable(state: GlobalState): bool =
-      PotentialUsers.forall(u =>
-        (not(u.in(state.users.keys()))) or
-        (state.users.get(u).status == "Ready") or
-        (state.users.get(u).status == "Deleted")
-    )
 
   // ========================================
   // ========= QUOTAS INVARIANTS ============
   // ========================================
   val QuotasNonNegative =
     globalState.users.keys().forall(u =>
-      (globalState.users.get(u).quotas.producerByteRate >= 0) and
-      (globalState.users.get(u).quotas.consumerByteRate >= 0) and
-      (globalState.users.get(u).quotas.requestPercentage >= 0) and
-      (globalState.users.get(u).quotas.controllerMutationRate >= 0)
+      (globalState.users.get(u).spec.quotas.producerByteRate >= 0) and
+      (globalState.users.get(u).spec.quotas.consumerByteRate >= 0) and
+      (globalState.users.get(u).spec.quotas.requestPercentage >= 0) and
+      (globalState.users.get(u).spec.quotas.controllerMutationRate >= 0)
     )
 
   val QuotasRequestPercentageValid =
     globalState.users.keys().forall(u =>
-      (globalState.users.get(u).quotas.requestPercentage >= 0) and
-      (globalState.users.get(u).quotas.requestPercentage <= 100)
+      (globalState.users.get(u).spec.quotas.requestPercentage >= 0) and
+      (globalState.users.get(u).spec.quotas.requestPercentage <= 100)
+    )
+
+  // ========================================
+  // ======== TEMPORAL PROPERTIES ===========
+  // ========================================
+
+  // A helper predicate that returns true if, for every potential user,
+  // either the user is not present in the state or, if present, its status is "Ready" or "Deleted".
+  def isStable(state: GlobalState): bool =
+    PotentialUsers.forall(u =>
+      (not(u.in(state.users.keys()))) or
+      (state.users.get(u).status.conditions.status == "Ready") or
+      (state.users.get(u).status.conditions.status == "Deleted")
     )
 
   // TODO: this is kinda tricky and it's does not HOLD in TLC need to investigate... :)
