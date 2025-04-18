@@ -283,31 +283,37 @@ module UserOperatorModel {
   // ========================================
   // ============== INVARIANTS ==============
   // ========================================
+
+  // If a user is "Ready", a secret must exist for them.
+  // If a user is "Deleted", no secret must exist for them.
   val UserConsistency = globalState.users.keys().forall(u =>
     ((globalState.users.get(u).status.conditions.status == "Ready") implies globalState.secrets.contains(u))
     and
     ((globalState.users.get(u).status.conditions.status == "Deleted") implies not(globalState.secrets.contains(u)))
   )
 
+  // a secret exists if and only if user is "Ready".
   val SecretsConsistency =
     globalState.users.keys().forall(u =>
       (globalState.secrets.contains(u)) ==
       (globalState.users.get(u).status.conditions.status == "Ready")
     )
 
+  // No user marked as "Deleted" should have a secret.
   val NoSecretsForDeletedUsers =
     globalState.users.keys().forall(u =>
       (globalState.users.get(u).status.conditions.status == "Deleted") implies
       not(globalState.secrets.contains(u))
     )
 
+  // Every "Ready" user must have a corresponding secret.
   val ReadyUsersMustHaveSecrets =
     globalState.users.keys().forall(u =>
       (globalState.users.get(u).status.conditions.status == "Ready") implies
       globalState.secrets.contains(u)
     )
 
-  // Safety invariant: Every event in the event queue references a valid potential user.
+  // Every event in the queue must refer to a known PotentialUser.
   val EventQueueWellFormed =
       length(globalState.eventQueue.select(ev =>
          match ev {
@@ -320,6 +326,8 @@ module UserOperatorModel {
   // ========================================
   // ========= QUOTAS INVARIANTS ============
   // ========================================
+
+  // All quota values must be non-negative.
   val QuotasNonNegative =
     globalState.users.keys().forall(u =>
       (globalState.users.get(u).spec.quotas.producerByteRate >= 0) and
@@ -328,6 +336,7 @@ module UserOperatorModel {
       (globalState.users.get(u).spec.quotas.controllerMutationRate >= 0)
     )
 
+  // The requestPercentage quota must be between 0 and 100 inclusive.
   val QuotasRequestPercentageValid =
     globalState.users.keys().forall(u =>
       (globalState.users.get(u).spec.quotas.requestPercentage >= 0) and
