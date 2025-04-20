@@ -342,6 +342,29 @@ module UserOperatorModel {
       (globalState.users.get(u).spec.quotas.requestPercentage >= 0) and
       (globalState.users.get(u).spec.quotas.requestPercentage <= 100)
     )
+  
+  // If a KafkaUser is Ready, then their quotas must be valid. => (Non-negative and requestPercentage ∈ [0,100])
+  val ReadyUsersQuotasValid =
+    globalState.users.keys().forall(u =>
+     (globalState.users.get(u).status.conditions.status == "Ready") implies
+     (
+       globalState.users.get(u).spec.quotas.producerByteRate >= 0
+       and globalState.users.get(u).spec.quotas.consumerByteRate >= 0
+       and globalState.users.get(u).spec.quotas.requestPercentage >= 0
+       and globalState.users.get(u).spec.quotas.requestPercentage <= 100
+       and globalState.users.get(u).spec.quotas.controllerMutationRate >= 0
+     )
+  )
+
+  val AllInvariantsHold =
+    UserConsistency
+     and SecretsConsistency
+     and NoSecretsForDeletedUsers
+     and ReadyUsersMustHaveSecrets
+     and EventQueueWellFormed
+     and QuotasNonNegative
+     and QuotasRequestPercentageValid
+     and ReadyUsersQuotasValid
 
   // ========================================
   // ======== TEMPORAL PROPERTIES ===========
