@@ -257,7 +257,9 @@ module UserOperatorModel {
           if (cr.metadata.name.in(state.users.keys()))
             {
               users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
-              secrets: 
+              secrets:
+                // Ignores updates to deleted users.
+                // Doesn’t regenerate secrets for deleted users.
                 if (state.users.get(cr.metadata.name).status.conditions.status == "Deleted")
                   state.secrets
                 else 
