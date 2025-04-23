@@ -1,3 +1,4 @@
+// -*- mode: Bluespec; -*-
 module UserOperator3Users {
   // This module instantiates the UserOperatorModel with three potential users.
   import UserOperatorModel(
@@ -22,12 +23,11 @@ module UserOperatorModel {
     // annotations: str -> str (abstracted out)
   }
 
-  // TODO: // (abstracted out for now)
-  //type KafkaUserAuthentication = {
-  //  type: str
-  // password, secrets etc. are skipped
-  // }
-
+  type KafkaUserAuthentication =
+    | ScramSha512Authentication({ secretName: str, secretKey: str, optional: bool })
+    | TlsAuthentication({ enabled: bool })
+    | NoneAuthentication          // no authentication configured :)
+  
   type KafkaUserQuotas = {
     producerByteRate: int,
     consumerByteRate: int,
@@ -36,7 +36,7 @@ module UserOperatorModel {
   }
 
   type KafkaUserSpec = {
-    // authentication: KafkaUserAuthentication,    // (abstracted out)
+    authentication: KafkaUserAuthentication,
     // authorization: KafkaUserAuthorization,      // (abstracted out)
     quotas: KafkaUserQuotas
   }
@@ -104,77 +104,76 @@ module UserOperatorModel {
   // ACTIONS FOR GENERATING EVENTS
   // ============================================================================
 
+  def requiresSecret(auth: KafkaUserAuthentication): bool =
+  match auth {
+    | ScramSha512Authentication(_) => true
+    | TlsAuthentication(_) => true
+    | NoneAuthentication => false
+  }
+
   // helper for queueEvent
   def queueEvent(ev: Event): GlobalState =
     { ...globalState, eventQueue: globalState.eventQueue.append(ev) }
- 
-  def newUser(u: str): UserResource =
-    {
-      metadata: { name: u },
-      spec: {
-        quotas: {
-          producerByteRate: 0,
-          consumerByteRate: 0,
-          requestPercentage: 0,
-          controllerMutationRate: 0
-        }
-      },
-      status: { conditions: { status: "Pending" } }
-    }
+
+  def makeAuth(u: str, authType: str): KafkaUserAuthentication =
+    if (authType == "scramsha")
+      ScramSha512Authentication({
+        secretName: u,
+        secretKey: "my-password",
+        optional: false
+      })
+    else if (authType == "tls")
+      TlsAuthentication({ enabled: true })
+    else
+      NoneAuthentication
+
+  def makeQuotas(quotasEnabled: bool): KafkaUserQuotas =
+    if (quotasEnabled == true)
+      {
+        producerByteRate: 100,
+        consumerByteRate: 200,
+        requestPercentage: 50,
+        controllerMutationRate: 5
+      }
+    else
+      {
+        producerByteRate: 0,
+        consumerByteRate: 0,
+        requestPercentage: 0,
+        controllerMutationRate: 0
+      }
 
   // Each action appends its corresponding event to the eventQueue.
-  action createUser(u) = globalState' = queueEvent(UserCreatedWithSecret(newUser(u)))
-  // Creates user with non-default quotas
-  action createUserWithQuotas(u) =
+  action createUser(u, authType, quotasEnabled) =
     globalState' = queueEvent(
       UserCreatedWithSecret({
         metadata: { name: u },
         spec: {
-          quotas: {
-            producerByteRate: 100,
-            consumerByteRate: 200,
-            requestPercentage: 50,
-            controllerMutationRate: 5
-          }
+          authentication: makeAuth(u, authType),
+          quotas: makeQuotas(quotasEnabled)
         },
         status: { conditions: { status: "Pending" } }
-
       })
     )
 
-  action deleteUser(u) = globalState' = queueEvent(UserDeleted(u))
-
-  action updateUser(u) =
-    if (u.in(globalState.users.keys()))
+  action updateUser(u, authType, quotasEnabled) = {
+    if (u.in(globalState.users.keys())) {
       globalState' = queueEvent(
         UserUpdated({
           metadata: { name: u },
-          spec: globalState.users.get(u).spec,
-          status: { conditions: { status: "Ready" } }
+          spec: {
+            authentication: makeAuth(u, authType),
+            quotas: makeQuotas(quotasEnabled)
+          },
+          status: { conditions: { status: "Pending" } }
         })
       )
-    else
+    } else {
       globalState' = globalState
+    }
+  }
 
-   // Updates user quotas
-   action updateUserWithQuotas(u) =
-     if (u.in(globalState.users.keys()))
-       globalState' = queueEvent(
-         UserUpdated({
-           metadata: { name: u },
-           spec: {
-             quotas: {
-               producerByteRate: 500,
-               consumerByteRate: 500,
-               requestPercentage: 90,
-               controllerMutationRate: 20
-             }
-           },
-           status: { conditions: { status: "Ready" } }
-         })
-       )
-     else
-       globalState' = globalState
+  action deleteUser(u) = globalState' = queueEvent(UserDeleted(u))
 
   // ============================================================================
   // STEP FUNCTION
@@ -183,11 +182,11 @@ module UserOperatorModel {
   // If the choice is "reconcile" but the eventQueue is empty, it falls back to generating an event.
   action step = {
     nondet u = PotentialUsers.oneOf()
+    nondet authType = Set("scramsha", "tls", "none").oneOf()
+    nondet quotasEnabled = Set(false, true).oneOf()
     any {
-      createUser(u),
-      createUserWithQuotas(u),
-      updateUser(u),
-      updateUserWithQuotas(u),
+      createUser(u, authType, quotasEnabled),
+      updateUser(u, authType, quotasEnabled),
       deleteUser(u),
       if (length(globalState.eventQueue) > 0)
         globalState' = processEvent({ ... globalState, eventQueue : tail(globalState.eventQueue) }, head(globalState.eventQueue))
@@ -216,7 +215,12 @@ module UserOperatorModel {
                   spec: cr.spec,
                   status: {
                     conditions: {
-                      status: if (cr.metadata.name.in(globalState.secrets)) "Ready" else "Pending"
+                      // If the new authentication requires secret, only then check secret presence to become Ready.
+                      // If the new authentication does NOT require secret, always directly become Ready.
+                      status: if (requiresSecret(cr.spec.authentication))
+                                (if (cr.metadata.name.in(globalState.secrets)) "Ready" else "Pending")
+                              else
+                                "Ready"
                     }
                   }
                 }
@@ -234,7 +238,7 @@ module UserOperatorModel {
         if (cr.metadata.name.in(state.users.keys()))
           {
             users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
-            secrets: state.secrets.union(Set(cr.metadata.name)),
+            secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
@@ -245,7 +249,7 @@ module UserOperatorModel {
               spec: cr.spec,
               status: { conditions: { status: "Ready" } }
             }),
-            secrets: state.secrets.union(Set(cr.metadata.name)),
+            secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
           }
@@ -253,7 +257,14 @@ module UserOperatorModel {
           if (cr.metadata.name.in(state.users.keys()))
             {
               users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
-              secrets: state.secrets,
+              secrets: 
+                if (state.users.get(cr.metadata.name).status.conditions.status == "Deleted")
+                  state.secrets
+                else 
+                  if (requiresSecret(cr.spec.authentication))
+                    state.secrets.union(Set(cr.metadata.name))
+                  else
+                    state.secrets.exclude(Set(cr.metadata.name)),
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
@@ -264,7 +275,8 @@ module UserOperatorModel {
                 spec: cr.spec,
                 status: { conditions: { status: "Ready" } }
               }),
-              secrets: state.secrets.union(Set(cr.metadata.name)),
+              // TODO: when going from TLS to non-TLS (should I add secret?? ) => currnetly I am adding...
+              secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
@@ -284,22 +296,28 @@ module UserOperatorModel {
   // ============== INVARIANTS ==============
   // ========================================
 
-  // If a user is "Ready", a secret must exist for them.
+  // If Ready and requires Secret → Secret must exist
+  // If Ready and does not require Secret → it’s OK if Secret is missing
   // If a user is "Deleted", no secret must exist for them.
   val UserConsistency = globalState.users.keys().forall(u =>
-    ((globalState.users.get(u).status.conditions.status == "Ready") implies globalState.secrets.contains(u))
+    ((globalState.users.get(u).status.conditions.status == "Ready") implies
+      (not(requiresSecret(globalState.users.get(u).spec.authentication)) or globalState.secrets.contains(u))
+    )
     and
     ((globalState.users.get(u).status.conditions.status == "Deleted") implies not(globalState.secrets.contains(u)))
   )
 
-  // a secret exists if and only if user is "Ready".
+  // Only if Ready and Secret is needed → Secret must exist.
+  // If a user is Ready and their current authentication requires a secret, then the secret must exist.
   val SecretsConsistency =
     globalState.users.keys().forall(u =>
-      (globalState.secrets.contains(u)) ==
-      (globalState.users.get(u).status.conditions.status == "Ready")
+      (requiresSecret(globalState.users.get(u).spec.authentication) and
+       globalState.users.get(u).status.conditions.status == "Ready")
+      implies globalState.secrets.contains(u)
     )
 
   // No user marked as "Deleted" should have a secret.
+  // deletion imp/lies that a secret is *not required* anymore, but it may still exist
   val NoSecretsForDeletedUsers =
     globalState.users.keys().forall(u =>
       (globalState.users.get(u).status.conditions.status == "Deleted") implies
@@ -310,7 +328,7 @@ module UserOperatorModel {
   val ReadyUsersMustHaveSecrets =
     globalState.users.keys().forall(u =>
       (globalState.users.get(u).status.conditions.status == "Ready") implies
-      globalState.secrets.contains(u)
+        (not(requiresSecret(globalState.users.get(u).spec.authentication)) or globalState.secrets.contains(u))
     )
 
   // Every event in the queue must refer to a known PotentialUser.
@@ -355,6 +373,18 @@ module UserOperatorModel {
        and globalState.users.get(u).spec.quotas.controllerMutationRate >= 0
      )
   )
+  
+  // ========================================
+  // ====== AUTHENTICATION INVARIANTS =======
+  // ========================================
+  val AuthenticationPresent =
+  globalState.users.keys().forall(u =>
+    match globalState.users.get(u).spec.authentication {
+      | ScramSha512Authentication(_) => true
+      | TlsAuthentication(_) => true
+      | NoneAuthentication => true
+    }
+  )
 
   val AllInvariantsHold =
     UserConsistency
@@ -365,6 +395,7 @@ module UserOperatorModel {
      and QuotasNonNegative
      and QuotasRequestPercentageValid
      and ReadyUsersQuotasValid
+     and AuthenticationPresent
 
   // ========================================
   // ======== TEMPORAL PROPERTIES ===========
