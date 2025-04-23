@@ -27,7 +27,48 @@ module UserOperatorModel {
     | ScramSha512Authentication({ secretName: str, secretKey: str, optional: bool })
     | TlsAuthentication({ enabled: bool })
     | NoneAuthentication          // no authentication configured :)
+
+  type ResourceType = 
+      topic     | 
+      group     | 
+      cluster   | 
+      transactionalId
   
+  type PatternType = 
+      literal | 
+      prefix
+  
+  type Operation = 
+      Read          |
+      Write         |
+      Create        |
+      Delete        | 
+      Alter         |
+      Describe      |
+      ClusterAction |
+      AlterConfigs  |
+      DescribeConfigs |
+      IdempotentWrite |
+      All
+
+  type AclResource = {
+      name: str,
+      typeAcl: ResourceType,
+      patternType: PatternType
+  }
+
+  type SimpleAclRule = {
+      resource: AclResource,
+      operation: Operation,
+      host: str,
+      kind: str // "allow"
+  }
+
+  type KafkaUserAuthorization = {
+      typeAuthz: str, // "simple"
+      acls: Set[SimpleAclRule]
+    }
+
   type KafkaUserQuotas = {
     producerByteRate: int,
     consumerByteRate: int,
@@ -37,7 +78,7 @@ module UserOperatorModel {
 
   type KafkaUserSpec = {
     authentication: KafkaUserAuthentication,
-    // authorization: KafkaUserAuthorization,      // (abstracted out)
+    authorization: KafkaUserAuthorization,
     quotas: KafkaUserQuotas
   }
 
@@ -143,26 +184,43 @@ module UserOperatorModel {
         controllerMutationRate: 0
       }
 
+  // TODO: make those ACLs operation non-determinstic and not just use read :))
+  def makeAcl(): Set[SimpleAclRule] = Set({
+     resource: { name: "*", typeAcl: topic, patternType: literal },
+     operation: Read,
+     host: "*",
+     kind: "allow"
+  })
+
+  def makeAuthz(enable: bool): KafkaUserAuthorization =
+    if (enable)
+        { typeAuthz: "simple", acls: makeAcl }
+    else
+        { typeAuthz: "disabled", acls: Set() }
+
   // Each action appends its corresponding event to the eventQueue.
-  action createUser(u, authType, quotasEnabled) =
+  action createUser(u, authType, quotasEnabled, aclsEnabled) = {
     globalState' = queueEvent(
       UserCreatedWithSecret({
         metadata: { name: u },
         spec: {
           authentication: makeAuth(u, authType),
+          authorization: makeAuthz(aclsEnabled),
           quotas: makeQuotas(quotasEnabled)
         },
         status: { conditions: { status: "Pending" } }
       })
     )
+  }
 
-  action updateUser(u, authType, quotasEnabled) = {
+  action updateUser(u, authType, quotasEnabled, aclsEnabled) = {
     if (u.in(globalState.users.keys())) {
       globalState' = queueEvent(
         UserUpdated({
           metadata: { name: u },
           spec: {
             authentication: makeAuth(u, authType),
+            authorization: makeAuthz(aclsEnabled),
             quotas: makeQuotas(quotasEnabled)
           },
           status: { conditions: { status: "Pending" } }
@@ -184,9 +242,10 @@ module UserOperatorModel {
     nondet u = PotentialUsers.oneOf()
     nondet authType = Set("scramsha", "tls", "none").oneOf()
     nondet quotasEnabled = Set(false, true).oneOf()
+    nondet aclsEnabled = Set(false, true).oneOf()
     any {
-      createUser(u, authType, quotasEnabled),
-      updateUser(u, authType, quotasEnabled),
+      createUser(u, authType, quotasEnabled, aclsEnabled),
+      updateUser(u, authType, quotasEnabled, aclsEnabled),
       deleteUser(u),
       if (length(globalState.eventQueue) > 0)
         globalState' = processEvent({ ... globalState, eventQueue : tail(globalState.eventQueue) }, head(globalState.eventQueue))
@@ -227,7 +286,13 @@ module UserOperatorModel {
       | UserDeleted(username) =>
               {
                 metadata: user.metadata,
-                spec: user.spec,
+                spec: { 
+                  ...user.spec,
+                  authorization: {
+                    typeAuthz: "disabled",
+                    acls: Set()
+                  }
+                },
                 status: { conditions: { status: "Deleted" } }
               }
     }
@@ -388,6 +453,41 @@ module UserOperatorModel {
     }
   )
 
+  // ========================================
+  // =========== ACL INVARIANTS =============
+  // ========================================
+
+  // If a user’s authorization is enabled (typeAuthz == "simple" and ACLs are non-empty),
+  // then each rule must have valid structure.
+  val ACLsExistForAuthorizedUsers =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).spec.authorization.typeAuthz == "simple") implies
+        globalState.users.get(u).spec.authorization.acls.forall(rule =>
+          rule.resource.name != "" and
+          rule.host != "" and
+          rule.kind == "allow"
+        )
+    )
+
+  // A deleted user must not have any ACLs.
+  val NoACLsForDeletedUsers =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).status.conditions.status == "Deleted") implies
+        globalState.users.get(u).spec.authorization.acls == Set()
+    )
+
+  // If a user is “Ready” and authorization is enabled, then they must have at least one ACL rule.
+  val ReadyUsersMustHaveACLs =
+    globalState.users.keys().forall(u =>
+      (globalState.users.get(u).status.conditions.status == "Ready"
+       and globalState.users.get(u).spec.authorization.typeAuthz == "simple")
+      implies globalState.users.get(u).spec.authorization.acls.size() > 0
+    )
+
+  // ========================================
+  // ========================================
+  // ========================================
+
   val AllInvariantsHold =
     UserConsistency
      and SecretsConsistency
@@ -398,6 +498,9 @@ module UserOperatorModel {
      and QuotasRequestPercentageValid
      and ReadyUsersQuotasValid
      and AuthenticationPresent
+     and ACLsExistForAuthorizedUsers
+     and NoACLsForDeletedUsers
+     and ReadyUsersMustHaveACLs
 
   // ========================================
   // ======== TEMPORAL PROPERTIES ===========
