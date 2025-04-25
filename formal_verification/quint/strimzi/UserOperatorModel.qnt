@@ -1,18 +1,6 @@
 // -*- mode: Bluespec; -*-
-module UserOperator3Users {
-  // This module instantiates the UserOperatorModel with three potential users.
-  import UserOperatorModel(
-            PotentialUsers = Set("Alice", "Bob", "Carol")
-         ).*
-}
 
 module UserOperatorModel {
-
-  // ============================================================================
-  // MODEL PARAMETERS
-  // ============================================================================
-  const PotentialUsers: Set[str]
-
   // ============================================================================
   // TYPE ALIASES
   // ============================================================================
@@ -128,11 +116,14 @@ module UserOperatorModel {
   // ============================================================================
   // All state is encapsulated in a single global variable.
   var globalState: GlobalState
+  var parameters : { aclsEnabled : bool, potentialUsers : Set[str] }
 
   // ============================================================================
   // INITIALIZATION ACTION
   // ============================================================================
   action init = all {
+    nondet acl = Set(true, false).oneOf()
+    parameters' = { aclsEnabled : acl, potentialUsers : Set("Alice", "Bob", "Carol") },
     globalState' = { 
       users: Map(), 
       secrets : Set(), 
@@ -199,7 +190,7 @@ module UserOperatorModel {
         { typeAuthz: "disabled", acls: Set() }
 
   // Each action appends its corresponding event to the eventQueue.
-  action createUser(u, authType, quotasEnabled, aclsEnabled) = {
+  action createUser(u, authType, quotasEnabled, aclsEnabled) = all {
     globalState' = queueEvent(
       UserCreatedWithSecret({
         metadata: { name: u },
@@ -210,10 +201,11 @@ module UserOperatorModel {
         },
         status: { conditions: { status: "Pending" } }
       })
-    )
+    ),
+    parameters' = parameters
   }
 
-  action updateUser(u, authType, quotasEnabled, aclsEnabled) = {
+  action updateUser(u, authType, quotasEnabled, aclsEnabled) = all {
     if (u.in(globalState.users.keys())) {
       globalState' = queueEvent(
         UserUpdated({
@@ -228,10 +220,22 @@ module UserOperatorModel {
       )
     } else {
       globalState' = globalState
-    }
+    },
+    parameters' = parameters
   }
 
-  action deleteUser(u) = globalState' = queueEvent(UserDeleted(u))
+  action deleteUser(u) = all {
+    globalState' = queueEvent(UserDeleted(u)),
+    parameters' = parameters
+  }
+
+  action processNextEvent = all {
+    if (length(globalState.eventQueue) > 0)
+      globalState' = processEvent({ ...globalState, eventQueue: tail(globalState.eventQueue) }, head(globalState.eventQueue))
+    else
+      globalState' = globalState,
+    parameters' = parameters
+  }
 
   // ============================================================================
   // STEP FUNCTION
@@ -239,18 +243,14 @@ module UserOperatorModel {
   // The step action nondeterministically chooses between generating an event and processing an event.
   // If the choice is "reconcile" but the eventQueue is empty, it falls back to generating an event.
   action step = {
-    nondet u = PotentialUsers.oneOf()
+    nondet u = parameters.potentialUsers.oneOf()
     nondet authType = Set("scramsha", "tls", "none").oneOf()
     nondet quotasEnabled = Set(false, true).oneOf()
-    nondet aclsEnabled = Set(false, true).oneOf()
     any {
-      createUser(u, authType, quotasEnabled, aclsEnabled),
-      updateUser(u, authType, quotasEnabled, aclsEnabled),
+      createUser(u, authType, quotasEnabled, parameters.aclsEnabled),
+      updateUser(u, authType, quotasEnabled, parameters.aclsEnabled),
       deleteUser(u),
-      if (length(globalState.eventQueue) > 0)
-        globalState' = processEvent({ ... globalState, eventQueue : tail(globalState.eventQueue) }, head(globalState.eventQueue))
-      else
-        globalState' = globalState
+      processNextEvent
     }
   }
 
@@ -277,7 +277,7 @@ module UserOperatorModel {
                       // If the new authentication requires secret, only then check secret presence to become Ready.
                       // If the new authentication does NOT require secret, always directly become Ready.
                       status: if (requiresSecret(cr.spec.authentication))
-                                (if (cr.metadata.name.in(globalState.secrets)) "Ready" else "Pending")
+                              (if (cr.metadata.name.in(globalState.secrets)) "Ready" else "Pending")
                               else
                                 "Ready"
                     }
@@ -402,9 +402,9 @@ module UserOperatorModel {
   val EventQueueWellFormed =
       length(globalState.eventQueue.select(ev =>
          match ev {
-           | UserCreatedWithSecret(cr) => cr.metadata.name.in(PotentialUsers)
-           | UserUpdated(cr) => cr.metadata.name.in(PotentialUsers)
-           | UserDeleted(u)    => u.in(PotentialUsers)
+           | UserCreatedWithSecret(cr) => cr.metadata.name.in(parameters.potentialUsers)
+           | UserUpdated(cr) => cr.metadata.name.in(parameters.potentialUsers)
+           | UserDeleted(u)    => u.in(parameters.potentialUsers)
          }
        )) == length(globalState.eventQueue)
 
@@ -509,7 +509,7 @@ module UserOperatorModel {
   // A helper predicate that returns true if, for every potential user,
   // either the user is not present in the state or, if present, its status is "Ready" or "Deleted".
   def isStable(state: GlobalState): bool =
-    PotentialUsers.forall(u =>
+    parameters.potentialUsers.forall(u =>
       (not(u.in(state.users.keys()))) or
       (state.users.get(u).status.conditions.status == "Ready") or
       (state.users.get(u).status.conditions.status == "Deleted")
