@@ -201,8 +201,7 @@ module UserOperatorModel {
         },
         status: { conditions: { status: "Pending" } }
       })
-    ),
-    parameters' = parameters
+    )
   }
 
   action updateUser(u, authType, quotasEnabled, aclsEnabled) = all {
@@ -220,21 +219,18 @@ module UserOperatorModel {
       )
     } else {
       globalState' = globalState
-    },
-    parameters' = parameters
+    }
   }
 
   action deleteUser(u) = all {
     globalState' = queueEvent(UserDeleted(u)),
-    parameters' = parameters
   }
 
   action processNextEvent = all {
     if (length(globalState.eventQueue) > 0)
       globalState' = processEvent({ ...globalState, eventQueue: tail(globalState.eventQueue) }, head(globalState.eventQueue))
     else
-      globalState' = globalState,
-    parameters' = parameters
+      globalState' = globalState
   }
 
   // ============================================================================
@@ -242,7 +238,7 @@ module UserOperatorModel {
   // ============================================================================
   // The step action nondeterministically chooses between generating an event and processing an event.
   // If the choice is "reconcile" but the eventQueue is empty, it falls back to generating an event.
-  action step = {
+  action step = all {
     nondet u = parameters.potentialUsers.oneOf()
     nondet authType = Set("scramsha", "tls", "none").oneOf()
     nondet quotasEnabled = Set(false, true).oneOf()
@@ -251,7 +247,8 @@ module UserOperatorModel {
       updateUser(u, authType, quotasEnabled, parameters.aclsEnabled),
       deleteUser(u),
       processNextEvent
-    }
+    },
+    parameters' = parameters,
   }
 
   // ============================================================================
