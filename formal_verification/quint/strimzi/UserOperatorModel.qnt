@@ -148,7 +148,7 @@ module UserOperatorModel {
     { ...globalState, eventQueue: globalState.eventQueue.append(ev) }
 
   def makeAuth(u: str, authType: str): KafkaUserAuthentication =
-    if (authType == "scramsha")
+    if (authType == "scram-sha-512")
       ScramSha512Authentication({
         secretName: u,
         secretKey: "my-password",
@@ -244,7 +244,7 @@ module UserOperatorModel {
   // If the choice is "reconcile" but the eventQueue is empty, it falls back to generating an event.
   action step = all {
     nondet u = parameters.potentialUsers.oneOf()
-    nondet authType = Set("scramsha", "tls", "none").oneOf()
+    nondet authType = Set("scram-sha-512", "tls", "none").oneOf()
     nondet quotasEnabled = Set(false, true).oneOf()
     any {
       createUser(u, authType, quotasEnabled, parameters.aclsEnabled),
