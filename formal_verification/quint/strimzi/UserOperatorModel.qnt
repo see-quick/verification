@@ -223,7 +223,11 @@ module UserOperatorModel {
   }
 
   action deleteUser(u) = all {
-    globalState' = queueEvent(UserDeleted(u)),
+    if (u.in(globalState.users.keys())) {
+      globalState' = queueEvent(UserDeleted(u))
+    } else {
+      globalState' = globalState
+    }
   }
 
   action processNextEvent = all {
@@ -502,7 +506,6 @@ module UserOperatorModel {
   // ========================================
   // ======== TEMPORAL PROPERTIES ===========
   // ========================================
-
   // A helper predicate that returns true if, for every potential user,
   // either the user is not present in the state or, if present, its status is "Ready" or "Deleted".
   def isStable(state: GlobalState): bool =
