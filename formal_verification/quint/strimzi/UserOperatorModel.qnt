@@ -61,7 +61,7 @@ module UserOperatorModel {
     producerByteRate: int,
     consumerByteRate: int,
     requestPercentage: int,
-    controllerMutationRate: int    // should be real but Quint has only int :)
+    controllerMutationRate: int
   }
 
   type KafkaUserSpec = {
@@ -89,7 +89,7 @@ module UserOperatorModel {
   type UserResource = {
     metadata: KafkaUserMetadata,
     spec: KafkaUserSpec,
-    status: KafkaUserStatus  //   "Pending", "Ready", "Error", or "Deleted"
+    status: KafkaUserStatus  //   "Pending", "Ready", or "Deleted"
   }
 
   // ============================================================================
