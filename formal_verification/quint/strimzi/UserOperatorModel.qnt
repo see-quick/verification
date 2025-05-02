@@ -358,19 +358,9 @@ module UserOperatorModel {
               eventQueue: state.eventQueue,
               processedEvents: state.processedEvents + 1
             }
-          else
-            {
-              users: state.users.put(cr.metadata.name, {
-                metadata: cr.metadata,
-                spec: cr.spec,
-                status: { conditions: { status: "Ready" } }
-              }),
-              // TODO: when going from TLS to non-TLS (should I add secret?? ) => currnetly I am adding...
-              secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
-              eventQueue: state.eventQueue,
-              processedEvents: state.processedEvents + 1
-            }
-      | UserDeleted(username) =>
+          else 
+            state
+       | UserDeleted(username) =>
           if (username.in(state.users.keys()))
             {
               users: state.users.put(username, reconcileUser(state.users.get(username), ev)),
