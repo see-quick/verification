@@ -17,27 +17,27 @@ module UserOperatorModel {
     | NoneAuthentication          // no authentication configured :)
 
   type ResourceType = 
-      topic     | 
-      group     | 
-      cluster   | 
-      transactionalId
+      topic     |
+      group     |           // (abstracted out)
+      cluster   |           // (abstracted out)
+      transactionalId       // (abstracted out)
   
   type PatternType = 
-      literal | 
-      prefix
+      literal |
+      prefix                 // (abstracted out)
   
   type Operation = 
-      Read          |
-      Write         |
-      Create        |
-      Delete        | 
-      Alter         |
-      Describe      |
-      ClusterAction |
-      AlterConfigs  |
-      DescribeConfigs |
-      IdempotentWrite |
-      All
+      Read  |
+      Write |                // (abstracted out)
+      Create        |        // (abstracted out)
+      Delete        |        // (abstracted out)
+      Alter         |        // (abstracted out)
+      Describe      |        // (abstracted out)
+      ClusterAction |        // (abstracted out)
+      AlterConfigs  |        // (abstracted out)
+      DescribeConfigs |      // (abstracted out)
+      IdempotentWrite |      // (abstracted out)
+      All                    // (abstracted out)
 
   type AclResource = {
       name: str,
@@ -190,7 +190,6 @@ module UserOperatorModel {
         controllerMutationRate: 0
       }
 
-  // TODO: make those ACLs operation non-determinstic and not just use read :))
   def makeAcl(): Set[SimpleAclRule] = Set({
      resource: { name: "*", typeAcl: topic, patternType: literal },
      operation: Read,
