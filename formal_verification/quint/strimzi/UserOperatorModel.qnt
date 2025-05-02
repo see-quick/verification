@@ -116,15 +116,29 @@ module UserOperatorModel {
   // ============================================================================
   // All state is encapsulated in a single global variable.
   var globalState: GlobalState
-  var parameters : { aclsEnabled : bool, potentialUsers : Set[str], maxProcessedEvents: int }
+  var parameters : {
+    aclsEnabled : bool,
+    potentialUsers : Set[str],
+    maxProcessedEvents: int,
+    authTypes: Set[str],
+    quotasEnabled: Set[bool]
+  }
 
   // ============================================================================
   // INITIALIZATION ACTION
   // ============================================================================
   action init = all {
+    // we fix ACLs (i.e., enabled / disabled within one trace)
     nondet acl = Set(true, false).oneOf()
+
     // for verifying temporal property one has to set maxProcessedEvents <= 10 or verification would take 1 day ++ :) 
-    parameters' = { aclsEnabled : acl, potentialUsers : Set("Alice", "Bob", "Carol"), maxProcessedEvents : 1000 },
+    parameters' = {
+        aclsEnabled : acl,
+        potentialUsers : Set("Alice", "Bob", "Carol"),
+        maxProcessedEvents : 1000,
+        authTypes: Set("scram-sha-512", "tls", "none"),
+        quotasEnabled: Set(true, false)
+    },
     globalState' = { 
       users: Map(), 
       secrets : Set(), 
@@ -245,8 +259,8 @@ module UserOperatorModel {
   // If the choice is "reconcile" but the eventQueue is empty, it falls back to generating an event.
   action step = all {
     nondet u = parameters.potentialUsers.oneOf()
-    nondet authType = Set("scram-sha-512", "tls", "none").oneOf()
-    nondet quotasEnabled = Set(true, false).oneOf()
+    nondet authType = parameters.authTypes.oneOf()
+    nondet quotasEnabled = parameters.quotasEnabled.oneOf()
 
     // the sum of (already processed + currently queued) is bounded.
     // we can never create more events than you will ever be allowed to process.
