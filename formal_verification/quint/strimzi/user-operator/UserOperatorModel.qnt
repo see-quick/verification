@@ -190,27 +190,40 @@ module UserOperatorModel {
         controllerMutationRate: 0
       }
 
-  def makeAcl(): Set[SimpleAclRule] = Set({
-     resource: { name: "*", typeAcl: topic, patternType: literal },
-     operation: Read,
-     host: "*",
-     kind: "allow"
-  })
+  def makeAcl(rType: ResourceType, pat: PatternType, op: Operation): Set[SimpleAclRule] =
+    Set({
+      resource: {
+        name: if (rType == cluster) "my-cluster" else "*",
+        typeAcl: rType,
+        patternType: pat
+      },
+      operation: op,
+      host: "*",
+      kind: "allow"
+   })
 
-  def makeAuthz(enable: bool): KafkaUserAuthorization =
+  def makeAuthz(enable: bool, rType: ResourceType, pat: PatternType, op: Operation): KafkaUserAuthorization =
     if (enable)
-        { typeAuthz: "simple", acls: makeAcl }
+        { typeAuthz: "simple", acls: makeAcl(rType, pat, op) }
     else
         { typeAuthz: "disabled", acls: Set() }
 
   // Each action appends its corresponding event to the eventQueue.
   action createUser(u, authType, quotasEnabled, aclsEnabled) = all {
+    nondet resourceType = Set(topic, group, cluster, transactionalId).oneOf()
+    nondet pattern = Set(literal, prefix).oneOf()
+    nondet op = Set(
+      Read, Write, Create, Delete, Alter,
+      Describe, ClusterAction, AlterConfigs,
+      DescribeConfigs, IdempotentWrite, All
+    ).oneOf()
+
     globalState' = queueEvent(
       UserCreatedWithSecret({
         metadata: { name: u },
         spec: {
           authentication: makeAuth(u, authType),
-          authorization: makeAuthz(aclsEnabled),
+          authorization: makeAuthz(aclsEnabled, resourceType, pattern, op),
           quotas: makeQuotas(quotasEnabled)
         },
         status: { conditions: { status: "Pending" } }
@@ -219,13 +232,21 @@ module UserOperatorModel {
   }
 
   action updateUser(u, authType, quotasEnabled, aclsEnabled) = all {
+    nondet resourceType = Set(topic, group, cluster, transactionalId).oneOf()
+    nondet pattern = Set(literal, prefix).oneOf()
+    nondet op = Set(
+          Read, Write, Create, Delete, Alter,
+          Describe, ClusterAction, AlterConfigs,
+          DescribeConfigs, IdempotentWrite, All
+        ).oneOf()
+
     if (u.in(globalState.users.keys())) {
       globalState' = queueEvent(
         UserUpdated({
           metadata: { name: u },
           spec: {
             authentication: makeAuth(u, authType),
-            authorization: makeAuthz(aclsEnabled),
+            authorization: makeAuthz(aclsEnabled, resourceType, pattern, op),
             quotas: makeQuotas(quotasEnabled)
           },
           status: { conditions: { status: "Pending" } }
