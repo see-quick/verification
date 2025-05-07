@@ -17,14 +17,14 @@ module UserOperatorModel {
     | NoneAuthentication          // no authentication configured :)
 
   type ResourceType = 
-      topic     |
-      group     |           // (abstracted out)
-      cluster   |           // (abstracted out)
-      transactionalId       // (abstracted out)
+      Topic     |
+      Group     |           // (abstracted out)
+      Cluster   |           // (abstracted out)
+      TransactionalId       // (abstracted out)
   
   type PatternType = 
-      literal |
-      prefix                 // (abstracted out)
+      Literal |
+      Prefix                 // (abstracted out)
   
   type Operation = 
       Read  |
@@ -190,40 +190,43 @@ module UserOperatorModel {
         controllerMutationRate: 0
       }
 
-  def makeAcl(rType: ResourceType, pat: PatternType, op: Operation): Set[SimpleAclRule] =
+  def makeAcl(t : (ResourceType, PatternType, Operation)): Set[SimpleAclRule] =
     Set({
       resource: {
-        name: if (rType == cluster) "my-cluster" else "*",
-        typeAcl: rType,
-        patternType: pat
+        name: if (t._1 == Cluster) "my-cluster" else "*",
+        typeAcl: t._1,
+        patternType: t._2
       },
-      operation: op,
+      operation: t._3,
       host: "*",
       kind: "allow"
    })
 
-  def makeAuthz(enable: bool, rType: ResourceType, pat: PatternType, op: Operation): KafkaUserAuthorization =
+   // globals for ACLs
+   pure val RESOURCE_TYPES = Set(Topic, Group, Cluster, TransactionalId)
+   pure val PATTERNS = Set(Literal, Prefix)
+   pure val OPS = Set(
+     Read, Write, Create, Delete, Alter,
+     Describe, ClusterAction, AlterConfigs,
+     DescribeConfigs, IdempotentWrite, All
+   )
+
+  def makeAuthz(enable: bool, t : (ResourceType, PatternType, Operation)): KafkaUserAuthorization =
     if (enable)
-        { typeAuthz: "simple", acls: makeAcl(rType, pat, op) }
+        { typeAuthz: "simple", acls: makeAcl(t) }
     else
         { typeAuthz: "disabled", acls: Set() }
 
   // Each action appends its corresponding event to the eventQueue.
   action createUser(u, authType, quotasEnabled, aclsEnabled) = all {
-    nondet resourceType = Set(topic, group, cluster, transactionalId).oneOf()
-    nondet pattern = Set(literal, prefix).oneOf()
-    nondet op = Set(
-      Read, Write, Create, Delete, Alter,
-      Describe, ClusterAction, AlterConfigs,
-      DescribeConfigs, IdempotentWrite, All
-    ).oneOf()
+     nondet authzParams = tuples(RESOURCE_TYPES, PATTERNS, OPS).oneOf()
 
-    globalState' = queueEvent(
+     globalState' = queueEvent(
       UserCreatedWithSecret({
         metadata: { name: u },
         spec: {
           authentication: makeAuth(u, authType),
-          authorization: makeAuthz(aclsEnabled, resourceType, pattern, op),
+          authorization: makeAuthz(aclsEnabled, authzParams),
           quotas: makeQuotas(quotasEnabled)
         },
         status: { conditions: { status: "Pending" } }
@@ -232,13 +235,7 @@ module UserOperatorModel {
   }
 
   action updateUser(u, authType, quotasEnabled, aclsEnabled) = all {
-    nondet resourceType = Set(topic, group, cluster, transactionalId).oneOf()
-    nondet pattern = Set(literal, prefix).oneOf()
-    nondet op = Set(
-          Read, Write, Create, Delete, Alter,
-          Describe, ClusterAction, AlterConfigs,
-          DescribeConfigs, IdempotentWrite, All
-        ).oneOf()
+    nondet authzParams = tuples(RESOURCE_TYPES, PATTERNS, OPS).oneOf()
 
     if (u.in(globalState.users.keys())) {
       globalState' = queueEvent(
@@ -246,7 +243,7 @@ module UserOperatorModel {
           metadata: { name: u },
           spec: {
             authentication: makeAuth(u, authType),
-            authorization: makeAuthz(aclsEnabled, resourceType, pattern, op),
+            authorization: makeAuthz(aclsEnabled, authzParams),
             quotas: makeQuotas(quotasEnabled)
           },
           status: { conditions: { status: "Pending" } }
