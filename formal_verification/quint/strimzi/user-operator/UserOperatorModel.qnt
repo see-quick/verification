@@ -6,9 +6,10 @@ module UserOperatorModel {
   // ============================================================================
   // Metadata is abstracted
   type KafkaUserMetadata = {
-    name: str
+    name: str,
     // labels: str -> str  (abstracted out)
-    // annotations: str -> str (abstracted out)
+    // for paused reconciliation
+    annotations: str -> str 
   }
 
   type KafkaUserAuthentication =
@@ -18,26 +19,26 @@ module UserOperatorModel {
 
   type ResourceType = 
       Topic     |
-      Group     |           // (abstracted out)
-      Cluster   |           // (abstracted out)
-      TransactionalId       // (abstracted out)
+      Group     |          
+      Cluster   |         
+      TransactionalId    
   
   type PatternType = 
       Literal |
-      Prefix                 // (abstracted out)
+      Prefix            
   
   type Operation = 
       Read  |
-      Write |                // (abstracted out)
-      Create        |        // (abstracted out)
-      Delete        |        // (abstracted out)
-      Alter         |        // (abstracted out)
-      Describe      |        // (abstracted out)
-      ClusterAction |        // (abstracted out)
-      AlterConfigs  |        // (abstracted out)
-      DescribeConfigs |      // (abstracted out)
-      IdempotentWrite |      // (abstracted out)
-      All                    // (abstracted out)
+      Write |          
+      Create        | 
+      Delete        |
+      Alter         |   
+      Describe      |  
+      ClusterAction | 
+      AlterConfigs  |  
+      DescribeConfigs |
+      IdempotentWrite |
+      All
 
   type AclResource = {
       name: str,
@@ -220,10 +221,14 @@ module UserOperatorModel {
   // Each action appends its corresponding event to the eventQueue.
   action createUser(u, authType, quotasEnabled, aclsEnabled) = all {
      nondet authzParams = tuples(RESOURCE_TYPES, PATTERNS, OPS).oneOf()
+     nondet reconciliationPaused = Set(true, false).oneOf()
 
      globalState' = queueEvent(
       UserCreatedWithSecret({
-        metadata: { name: u },
+        metadata: { 
+          name: u,
+          annotations: if (reconciliationPaused) Map("strimzi.io/pause-reconciliation" -> "true") else Map()
+        },
         spec: {
           authentication: makeAuth(u, authType),
           authorization: makeAuthz(aclsEnabled, authzParams),
@@ -236,11 +241,15 @@ module UserOperatorModel {
 
   action updateUser(u, authType, quotasEnabled, aclsEnabled) = all {
     nondet authzParams = tuples(RESOURCE_TYPES, PATTERNS, OPS).oneOf()
+    nondet reconciliationPaused = Set(true, false).oneOf()
 
     if (u.in(globalState.users.keys())) {
       globalState' = queueEvent(
         UserUpdated({
-          metadata: { name: u },
+          metadata: { 
+            name: u,
+            annotations: if (reconciliationPaused) Map("strimzi.io/pause-reconciliation" -> "true") else Map()
+          },
           spec: {
             authentication: makeAuth(u, authType),
             authorization: makeAuthz(aclsEnabled, authzParams),
@@ -295,19 +304,38 @@ module UserOperatorModel {
     parameters' = parameters
   }
 
+  def getOrElse(m: str -> str, k: str, default: str): str =
+    if (k.in(m.keys())) m.get(k) else default
+
+
+  // helper
+  def reconciliationPaused(user: UserResource): bool =
+    getOrElse(user.metadata.annotations, "strimzi.io/pause-reconciliation", "") == "true"
+
   // ============================================================================
   // RECONCILIATION LOGIC (UserControllerLoop)
   // ============================================================================
   def reconcileUser(user: UserResource, ev: Event): UserResource =
     match ev {
       | UserCreatedWithSecret(cr) =>
-              {
-                metadata: cr.metadata,
-                spec: cr.spec,
-                status: { conditions: { status: "Ready" } }
-              }
-      | UserUpdated(cr) =>
               if (user.status.conditions.status == "Deleted")
+                // Re-create even if reconciliation is paused — spec should be replaced, status = Pending
+                {
+                  metadata: cr.metadata,
+                  spec: cr.spec,
+                  status: { conditions: { status: "Pending" } }
+                }
+              else
+                if (reconciliationPaused(cr))
+                    user
+                else
+                    {
+                      metadata: cr.metadata,
+                      spec: cr.spec,
+                      status: { conditions: { status: "Ready" } }
+                    }
+      | UserUpdated(cr) =>
+              if (user.status.conditions.status == "Deleted" or reconciliationPaused(cr))
                 user
               else
                 {
@@ -350,11 +378,7 @@ module UserOperatorModel {
           }
         else
           {
-            users: state.users.put(cr.metadata.name, {
-              metadata: cr.metadata,
-              spec: cr.spec,
-              status: { conditions: { status: "Ready" } }
-            }),
+            users: state.users.put(cr.metadata.name, reconcileUser(cr, ev)),
             secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
             eventQueue: state.eventQueue,
             processedEvents: state.processedEvents + 1
@@ -366,7 +390,7 @@ module UserOperatorModel {
               secrets:
                 // Ignores updates to deleted users.
                 // Doesn’t regenerate secrets for deleted users.
-                if (state.users.get(cr.metadata.name).status.conditions.status == "Deleted")
+                if (state.users.get(cr.metadata.name).status.conditions.status == "Deleted" or reconciliationPaused(cr))
                   state.secrets
                 else 
                   if (requiresSecret(cr.spec.authentication))
@@ -516,22 +540,35 @@ module UserOperatorModel {
     )
 
   // ========================================
+  // === PAUSED RECONCILIATION INVARIANTS ===
+  // ========================================
+
+  // A paused KafkaUser must never transition to "Ready"
+  val NoStateChangeForPausedUsers =
+    globalState.users.keys().forall(u =>
+      reconciliationPaused(globalState.users.get(u)) implies
+        globalState.users.get(u).status.conditions.status != "Ready"
+    )
+
+  // ========================================
   // ========================================
   // ========================================
 
-  val AllInvariantsHold =
-    UserConsistency
-     and SecretsConsistency
-     and NoSecretsForDeletedUsers
-     and ReadyUsersMustHaveSecrets
-     and EventQueueWellFormed
-     and QuotasNonNegative
-     and QuotasRequestPercentageValid
-     and ReadyUsersQuotasValid
-     and AuthenticationPresent
-     and ACLsExistForAuthorizedUsers
-     and NoACLsForDeletedUsers
-     and ReadyUsersMustHaveACLs
+  val AllInvariantsHold = and {
+      if (UserConsistency) true else q::debug("UserConsistency", false),
+      if (SecretsConsistency) true else q::debug("SecretsConsistency", false),
+      if (NoSecretsForDeletedUsers) true else q::debug("NoSecretsForDeletedUsers", false),
+      if (ReadyUsersMustHaveSecrets) true else q::debug("ReadyUsersMustHaveSecrets", false),
+      if (EventQueueWellFormed) true else q::debug("EventQueueWellFormed", false),
+      if (QuotasNonNegative) true else q::debug("QuotasNonNegative", false),
+      if (QuotasRequestPercentageValid) true else q::debug("QuotasRequestPercentageValid", false),
+      if (ReadyUsersQuotasValid) true else q::debug("ReadyUsersQuotasValid", false),
+      if (AuthenticationPresent) true else q::debug("AuthenticationPresent", false),
+      if (ACLsExistForAuthorizedUsers) true else q::debug("ACLsExistForAuthorizedUsers", false),
+      if (NoACLsForDeletedUsers) true else q::debug("NoACLsForDeletedUsers", false),
+      if (ReadyUsersMustHaveACLs) true else q::debug("ReadyUsersMustHaveACLs", false),
+      if (NoStateChangeForPausedUsers) true else q::debug("NoStateChangeForPausedUsers", false),
+  }
 
   // ========================================
   // ======== TEMPORAL PROPERTIES ===========
