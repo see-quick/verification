@@ -93,6 +93,8 @@ module UserOperatorModel {
     status: KafkaUserStatus  //   "Pending", "Ready", or "Deleted"
   }
 
+  type Fault = None | Pause | Conflict | Gone | ServerError
+
   // ============================================================================
   // EVENT MODEL
   // ============================================================================
@@ -144,7 +146,7 @@ module UserOperatorModel {
       users: Map(), 
       secrets : Set(), 
       eventQueue: [], 
-      processedEvents: 0
+      processedEvents: 0,
     }
   }
 
@@ -271,9 +273,9 @@ module UserOperatorModel {
     }
   }
 
-  action processNextEvent = all {
+  action processNextEvent(fault) = all {
     if (length(globalState.eventQueue) > 0)
-      globalState' = processEvent({ ...globalState, eventQueue: tail(globalState.eventQueue) }, head(globalState.eventQueue))
+      globalState' = processEvent({ ...globalState, eventQueue: tail(globalState.eventQueue) }, head(globalState.eventQueue), fault)
     else
       globalState' = globalState
   }
@@ -287,6 +289,7 @@ module UserOperatorModel {
     nondet u = parameters.potentialUsers.oneOf()
     nondet authType = parameters.authTypes.oneOf()
     nondet quotasEnabled = parameters.quotasEnabled.oneOf()
+    nondet fault = Set(None, Pause, Conflict, Gone, ServerError).oneOf()
 
     // the sum of (already processed + currently queued) is bounded.
     // we can never create more events than you will ever be allowed to process.
@@ -296,10 +299,10 @@ module UserOperatorModel {
         createUser(u, authType, quotasEnabled, parameters.aclsEnabled),
         updateUser(u, authType, quotasEnabled, parameters.aclsEnabled),
         deleteUser(u),
-        processNextEvent
+        processNextEvent(fault)
       }
     else
-      processNextEvent,
+      processNextEvent(fault),
 
     parameters' = parameters
   }
@@ -311,6 +314,10 @@ module UserOperatorModel {
   // helper
   def reconciliationPaused(user: UserResource): bool =
     getOrElse(user.metadata.annotations, "strimzi.io/pause-reconciliation", "") == "true"
+
+  // helper
+  def shouldSkipReconcile(f: Fault): bool =
+    f == Pause or f == Conflict or f == Gone or f == ServerError
 
   // ============================================================================
   // RECONCILIATION LOGIC (UserControllerLoop)
@@ -355,7 +362,7 @@ module UserOperatorModel {
       | UserDeleted(username) =>
               {
                 metadata: user.metadata,
-                spec: { 
+                spec: {
                   ...user.spec,
                   authorization: {
                     typeAuthz: "disabled",
@@ -366,52 +373,56 @@ module UserOperatorModel {
               }
     }
 
-  def processEvent(state: GlobalState, ev: Event): GlobalState =
-    match ev {
-      | UserCreatedWithSecret(cr) =>
-        if (cr.metadata.name.in(state.users.keys()))
-          {
-            users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
-            secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
-            eventQueue: state.eventQueue,
-            processedEvents: state.processedEvents + 1
-          }
-        else
-          {
-            users: state.users.put(cr.metadata.name, reconcileUser(cr, ev)),
-            secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
-            eventQueue: state.eventQueue,
-            processedEvents: state.processedEvents + 1
-          }
-      | UserUpdated(cr) =>
-          if (cr.metadata.name.in(state.users.keys()))
-            {
-              users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
-              secrets:
-                // Ignores updates to deleted users.
-                // Doesn’t regenerate secrets for deleted users.
-                if (state.users.get(cr.metadata.name).status.conditions.status == "Deleted" or reconciliationPaused(cr))
-                  state.secrets
-                else 
-                  if (requiresSecret(cr.spec.authentication))
-                    state.secrets.union(Set(cr.metadata.name))
-                  else
-                    state.secrets.exclude(Set(cr.metadata.name)),
-              eventQueue: state.eventQueue,
-              processedEvents: state.processedEvents + 1
-            }
-          else 
-            state
-       | UserDeleted(username) =>
-          if (username.in(state.users.keys()))
-            {
-              users: state.users.put(username, reconcileUser(state.users.get(username), ev)),
-              secrets: state.secrets.exclude(Set(username)),
-              eventQueue: state.eventQueue,
-              processedEvents: state.processedEvents + 1
-            }
-          else
-            state
+  def processEvent(state: GlobalState, ev: Event, fault : Fault): GlobalState =
+    if (shouldSkipReconcile(fault))
+        // Simulate skipping reconciliation due to an injected fault
+        { ...state, processedEvents: state.processedEvents + 1 }
+    else
+        match ev {
+          | UserCreatedWithSecret(cr) =>
+            if (cr.metadata.name.in(state.users.keys()))
+              {
+                users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
+                secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
+                eventQueue: state.eventQueue,
+                processedEvents: state.processedEvents + 1
+              }
+            else
+              {
+                users: state.users.put(cr.metadata.name, reconcileUser(cr, ev)),
+                secrets: if (requiresSecret(cr.spec.authentication)) state.secrets.union(Set(cr.metadata.name)) else state.secrets,
+                eventQueue: state.eventQueue,
+                processedEvents: state.processedEvents + 1
+              }
+          | UserUpdated(cr) =>
+              if (cr.metadata.name.in(state.users.keys()))
+                {
+                  users: state.users.put(cr.metadata.name, reconcileUser(state.users.get(cr.metadata.name), ev)),
+                  secrets:
+                    // Ignores updates to deleted users.
+                    // Doesn’t regenerate secrets for deleted users.
+                    if (state.users.get(cr.metadata.name).status.conditions.status == "Deleted" or reconciliationPaused(cr))
+                      state.secrets
+                    else
+                      if (requiresSecret(cr.spec.authentication))
+                        state.secrets.union(Set(cr.metadata.name))
+                      else
+                        state.secrets.exclude(Set(cr.metadata.name)),
+                  eventQueue: state.eventQueue,
+                  processedEvents: state.processedEvents + 1
+                }
+              else
+                state
+           | UserDeleted(username) =>
+              if (username.in(state.users.keys()))
+                {
+                  users: state.users.put(username, reconcileUser(state.users.get(username), ev)),
+                  secrets: state.secrets.exclude(Set(username)),
+                  eventQueue: state.eventQueue,
+                  processedEvents: state.processedEvents + 1
+                }
+              else
+                state
   }
 
   // ========================================
@@ -551,23 +562,41 @@ module UserOperatorModel {
     )
 
   // ========================================
+  // ===== FAULTS INJECTION INVARIANTS ======
+  // ========================================
+  val FaultsDoNotAffectState =
+    Set(Pause, Conflict, Gone, ServerError).forall(f =>
+      (length(globalState.eventQueue) > 0) implies (
+        (processEvent({ ...globalState, eventQueue: tail(globalState.eventQueue) }, head(globalState.eventQueue), f).users == globalState.users)
+        and
+        (processEvent({ ...globalState, eventQueue: tail(globalState.eventQueue) }, head(globalState.eventQueue), f).secrets == globalState.secrets)
+      )
+    )
+
+  // ========================================
   // ========================================
   // ========================================
 
+  // q::debug is not compatible with the TLA+ transpilation => workaround
+  //    i.)     debug with verifying Apalache        => q::debug(s,a)
+  //    ii.)    debug with TLC (liveness properties) => a
+  pure def debug(s, a) = a
+
   val AllInvariantsHold = and {
-      if (UserConsistency) true else q::debug("UserConsistency", false),
-      if (SecretsConsistency) true else q::debug("SecretsConsistency", false),
-      if (NoSecretsForDeletedUsers) true else q::debug("NoSecretsForDeletedUsers", false),
-      if (ReadyUsersMustHaveSecrets) true else q::debug("ReadyUsersMustHaveSecrets", false),
-      if (EventQueueWellFormed) true else q::debug("EventQueueWellFormed", false),
-      if (QuotasNonNegative) true else q::debug("QuotasNonNegative", false),
-      if (QuotasRequestPercentageValid) true else q::debug("QuotasRequestPercentageValid", false),
-      if (ReadyUsersQuotasValid) true else q::debug("ReadyUsersQuotasValid", false),
-      if (AuthenticationPresent) true else q::debug("AuthenticationPresent", false),
-      if (ACLsExistForAuthorizedUsers) true else q::debug("ACLsExistForAuthorizedUsers", false),
-      if (NoACLsForDeletedUsers) true else q::debug("NoACLsForDeletedUsers", false),
-      if (ReadyUsersMustHaveACLs) true else q::debug("ReadyUsersMustHaveACLs", false),
-      if (NoStateChangeForPausedUsers) true else q::debug("NoStateChangeForPausedUsers", false),
+      if (UserConsistency) true else debug("UserConsistency", false),
+      if (SecretsConsistency) true else debug("SecretsConsistency", false),
+      if (NoSecretsForDeletedUsers) true else debug("NoSecretsForDeletedUsers", false),
+      if (ReadyUsersMustHaveSecrets) true else debug("ReadyUsersMustHaveSecrets", false),
+      if (EventQueueWellFormed) true else debug("EventQueueWellFormed", false),
+      if (QuotasNonNegative) true else debug("QuotasNonNegative", false),
+      if (QuotasRequestPercentageValid) true else debug("QuotasRequestPercentageValid", false),
+      if (ReadyUsersQuotasValid) true else debug("ReadyUsersQuotasValid", false),
+      if (AuthenticationPresent) true else debug("AuthenticationPresent", false),
+      if (ACLsExistForAuthorizedUsers) true else debug("ACLsExistForAuthorizedUsers", false),
+      if (NoACLsForDeletedUsers) true else debug("NoACLsForDeletedUsers", false),
+      if (ReadyUsersMustHaveACLs) true else debug("ReadyUsersMustHaveACLs", false),
+      if (NoStateChangeForPausedUsers) true else debug("NoStateChangeForPausedUsers", false),
+      if (FaultsDoNotAffectState) true else debug("FaultsDoNotAffectState", false),
   }
 
   // ========================================
