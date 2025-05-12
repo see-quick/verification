@@ -1,18 +1,18 @@
 # Usage statistics is OFF. We care about your privacy.
 # If you want to help our project, consider enabling statistics with config --enable-stats=true.
 
-Output directory: /Users/morsak/Documents/Work/verification/formal_verification/quint/strimzi/user-operator/_apalache-out/server/2025-05-11T19-36-05_11058953296711294181
-# APALACHE version: 0.47.2 | build: def5e8e                       I@19:36:05.809
-Starting server on port 8822...                                   I@19:36:05.813
+Output directory: /Users/morsak/Documents/Work/verification/formal_verification/quint/strimzi/user-operator/_apalache-out/server/2025-05-12T10-29-32_7690100746968503133
+# APALACHE version: 0.47.2 | build: def5e8e                       I@10:29:32.574
+Starting server on port 8822...                                   I@10:29:32.577
 The Apalache server is running on port 8822. Press Ctrl-C to stop.
-PASS #0: SanyParser                                               I@19:36:09.753
+PASS #0: SanyParser                                               I@10:29:33.599
 --------------------------- MODULE UserOperatorModel ---------------------------
 
 EXTENDS Integers, Sequences, FiniteSets, TLC, Apalache, Variants
 
 VARIABLE
   (*
-    @type: { aclsEnabled: Bool, authTypes: Set(Str), maxProcessedEvents: Int, potentialUsers: Set(Str), quotasEnabled: Set(Bool) };
+    @type: { aclsEnabled: Bool, authTypes: Set(Str), maxProcessedEvents: Int, potentialUsers: Set(Str), quotasEnabled: Set(Bool), useDesiredPassword: Set(Bool) };
   *)
   parameters
 
@@ -62,14 +62,14 @@ Pause == Variant("Pause", [tag |-> "UNIT"])
 Conflict == Variant("Conflict", [tag |-> "UNIT"])
 
 (*
-  @type: ((a, b) => b);
-*)
-debug(s_1799, a_1799) == a_1799
-
-(*
   @type: (() => Conflict({ tag: Str }) | Gone({ tag: Str }) | None({ tag: Str }) | Pause({ tag: Str }) | ServerError({ tag: Str }));
 *)
 Gone == Variant("Gone", [tag |-> "UNIT"])
+
+(*
+  @type: ((a, b) => b);
+*)
+debug(s_1811, a_1811) == a_1811
 
 (*
   @type: (() => Conflict({ tag: Str }) | Gone({ tag: Str }) | None({ tag: Str }) | Pause({ tag: Str }) | ServerError({ tag: Str }));
@@ -77,47 +77,47 @@ Gone == Variant("Gone", [tag |-> "UNIT"])
 ServerError == Variant("ServerError", [tag |-> "UNIT"])
 
 (*
-  @type: (({ optional: Bool, secretKey: Str, secretName: Str }) => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }));
+  @type: (({ useDesiredPassword: Bool }) => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }));
 *)
-ScramSha512Authentication(__ScramSha512AuthenticationParam_20) ==
-  Variant("ScramSha512Authentication", __ScramSha512AuthenticationParam_20)
+ScramSha512Authentication(__ScramSha512AuthenticationParam_18) ==
+  Variant("ScramSha512Authentication", __ScramSha512AuthenticationParam_18)
 
 (*
-  @type: (({ enabled: Bool }) => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }));
+  @type: (({ enabled: Bool }) => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }));
 *)
-TlsAuthentication(__TlsAuthenticationParam_26) ==
-  Variant("TlsAuthentication", __TlsAuthenticationParam_26)
+TlsAuthentication(__TlsAuthenticationParam_24) ==
+  Variant("TlsAuthentication", __TlsAuthenticationParam_24)
 
 (*
-  @type: ((NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool })) => Bool);
+  @type: (() => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }));
 *)
-requiresSecret(auth_290) ==
-  CASE VariantTag(auth_290) = "ScramSha512Authentication"
+NoneAuthentication == Variant("NoneAuthentication", [tag |-> "UNIT"])
+
+(*
+  @type: ((NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool })) => Bool);
+*)
+requiresSecret(auth_294) ==
+  CASE VariantTag(auth_294) = "ScramSha512Authentication"
       -> LET (*
-        @type: (({ optional: Bool, secretKey: Str, secretName: Str }) => Bool);
+        @type: (({ useDesiredPassword: Bool }) => Bool);
       *)
-      __QUINT_LAMBDA0(id__282) == TRUE
+      __QUINT_LAMBDA0(id__286) == TRUE
       IN
-      __QUINT_LAMBDA0(VariantGetUnsafe("ScramSha512Authentication", auth_290))
-    [] VariantTag(auth_290) = "TlsAuthentication"
+      __QUINT_LAMBDA0(VariantGetUnsafe("ScramSha512Authentication", auth_294))
+    [] VariantTag(auth_294) = "TlsAuthentication"
       -> LET (*
         @type: (({ enabled: Bool }) => Bool);
       *)
-      __QUINT_LAMBDA1(id__285) == TRUE
+      __QUINT_LAMBDA1(id__289) == TRUE
       IN
-      __QUINT_LAMBDA1(VariantGetUnsafe("TlsAuthentication", auth_290))
-    [] VariantTag(auth_290) = "NoneAuthentication"
+      __QUINT_LAMBDA1(VariantGetUnsafe("TlsAuthentication", auth_294))
+    [] VariantTag(auth_294) = "NoneAuthentication"
       -> LET (*
         @type: (({ tag: Str }) => Bool);
       *)
-      __QUINT_LAMBDA2(id__288) == FALSE
+      __QUINT_LAMBDA2(id__292) == FALSE
       IN
-      __QUINT_LAMBDA2(VariantGetUnsafe("NoneAuthentication", auth_290))
-
-(*
-  @type: (() => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }));
-*)
-NoneAuthentication == Variant("NoneAuthentication", [tag |-> "UNIT"])
+      __QUINT_LAMBDA2(VariantGetUnsafe("NoneAuthentication", auth_294))
 
 (*
   @type: ((Bool) => { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int });
@@ -166,8 +166,8 @@ Prefix == Variant("Prefix", [tag |-> "UNIT"])
 (*
   @type: (((Str -> Str), Str, Str) => Str);
 *)
-getOrElse(m_698, k_698, default_698) ==
-  IF k_698 \in DOMAIN m_698 THEN m_698[k_698] ELSE default_698
+getOrElse(m_710, k_710, default_710) ==
+  IF k_710 \in DOMAIN m_710 THEN m_710[k_710] ELSE default_710
 
 (*
   @type: (() => All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }));
@@ -195,37 +195,35 @@ Delete == Variant("Delete", [tag |-> "UNIT"])
 Alter == Variant("Alter", [tag |-> "UNIT"])
 
 (*
-  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
+  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
 *)
-UserCreatedWithSecret(__UserCreatedWithSecretParam_197) ==
-  Variant("UserCreatedWithSecret", __UserCreatedWithSecretParam_197)
+UserCreatedWithSecret(__UserCreatedWithSecretParam_195) ==
+  Variant("UserCreatedWithSecret", __UserCreatedWithSecretParam_195)
 
 (*
-  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
+  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
 *)
-UserUpdated(__UserUpdatedParam_203) ==
-  Variant("UserUpdated", __UserUpdatedParam_203)
+UserUpdated(__UserUpdatedParam_201) ==
+  Variant("UserUpdated", __UserUpdatedParam_201)
 
 (*
-  @type: ((Str) => UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
+  @type: ((Str) => UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
 *)
-UserDeleted(__UserDeletedParam_209) ==
-  Variant("UserDeleted", __UserDeletedParam_209)
+UserDeleted(__UserDeletedParam_207) ==
+  Variant("UserDeleted", __UserDeletedParam_207)
 
 VARIABLE
   (*
-    @type: { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) };
+    @type: { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) };
   *)
   globalState
 
 (*
-  @type: ((Str, Str) => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }));
+  @type: ((Str, Bool) => NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }));
 *)
-makeAuth(u_331, authType_331) ==
+makeAuth(authType_331, useDesiredPassword_331) ==
   IF authType_331 = "scram-sha-512"
-  THEN ScramSha512Authentication([secretName |-> u_331,
-    secretKey |-> "my-password",
-    optional |-> FALSE])
+  THEN ScramSha512Authentication([useDesiredPassword |-> useDesiredPassword_331])
   ELSE IF authType_331 = "tls"
   THEN TlsAuthentication([enabled |-> TRUE])
   ELSE NoneAuthentication
@@ -259,8 +257,8 @@ OPS ==
 (*
   @type: ((Conflict({ tag: Str }) | Gone({ tag: Str }) | None({ tag: Str }) | Pause({ tag: Str }) | ServerError({ tag: Str })) => Bool);
 *)
-shouldSkipReconcile(f_733) ==
-  ((f_733 = Pause \/ f_733 = Conflict) \/ f_733 = Gone) \/ f_733 = ServerError
+shouldSkipReconcile(f_745) ==
+  ((f_745 = Pause \/ f_745 = Conflict) \/ f_745 = Gone) \/ f_745 = ServerError
 
 (*
   @type: ((<<Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }), Literal({ tag: Str }) | Prefix({ tag: Str }), All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str })>>) => Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }));
@@ -275,100 +273,100 @@ makeAcl(t_396) ==
     kind |-> "allow"]}
 
 (*
-  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => Bool);
+  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => Bool);
 *)
-reconciliationPaused(user_713) ==
-  getOrElse(user_713["metadata"]["annotations"], "strimzi.io/pause-reconciliation",
+reconciliationPaused(user_725) ==
+  getOrElse(user_725["metadata"]["annotations"], "strimzi.io/pause-reconciliation",
   "")
     = "true"
 
 (*
-  @type: (({ eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) }) => Bool);
+  @type: (({ eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) }) => Bool);
 *)
-isStable(state_1931) ==
-  \A u_1929 \in parameters["potentialUsers"]:
-    (~(u_1929 \in DOMAIN (state_1931["users"]))
-        \/ state_1931["users"][u_1929]["status"]["conditions"]["status"]
+isStable(state_1943) ==
+  \A u_1941 \in parameters["potentialUsers"]:
+    (~(u_1941 \in DOMAIN (state_1943["users"]))
+        \/ state_1943["users"][u_1941]["status"]["conditions"]["status"]
           = "Ready")
-      \/ state_1931["users"][u_1929]["status"]["conditions"]["status"]
+      \/ state_1943["users"][u_1941]["status"]["conditions"]["status"]
         = "Deleted"
 
 (*
   @type: (() => Bool);
 *)
 UserConsistency ==
-  \A u_1199 \in DOMAIN (globalState["users"]):
-    (globalState["users"][u_1199]["status"]["conditions"]["status"] = "Ready"
-        => ~(requiresSecret(globalState["users"][u_1199]["spec"][
+  \A u_1211 \in DOMAIN (globalState["users"]):
+    (globalState["users"][u_1211]["status"]["conditions"]["status"] = "Ready"
+        => ~(requiresSecret(globalState["users"][u_1211]["spec"][
             "authentication"
           ]))
-          \/ u_1199 \in globalState["secrets"])
-      /\ (globalState["users"][u_1199]["status"]["conditions"]["status"]
+          \/ u_1211 \in globalState["secrets"])
+      /\ (globalState["users"][u_1211]["status"]["conditions"]["status"]
         = "Deleted"
-        => ~(u_1199 \in globalState["secrets"]))
+        => ~(u_1211 \in globalState["secrets"]))
 
 (*
   @type: (() => Bool);
 *)
 SecretsConsistency ==
-  \A u_1237 \in DOMAIN (globalState["users"]):
-    requiresSecret(globalState["users"][u_1237]["spec"]["authentication"])
-      /\ globalState["users"][u_1237]["status"]["conditions"]["status"]
+  \A u_1249 \in DOMAIN (globalState["users"]):
+    requiresSecret(globalState["users"][u_1249]["spec"]["authentication"])
+      /\ globalState["users"][u_1249]["status"]["conditions"]["status"]
         = "Ready"
-      => u_1237 \in globalState["secrets"]
+      => u_1249 \in globalState["secrets"]
 
 (*
   @type: (() => Bool);
 *)
 NoSecretsForDeletedUsers ==
-  \A u_1265 \in DOMAIN (globalState["users"]):
-    globalState["users"][u_1265]["status"]["conditions"]["status"] = "Deleted"
-      => ~(u_1265 \in globalState["secrets"])
+  \A u_1277 \in DOMAIN (globalState["users"]):
+    globalState["users"][u_1277]["status"]["conditions"]["status"] = "Deleted"
+      => ~(u_1277 \in globalState["secrets"])
 
 (*
   @type: (() => Bool);
 *)
 ReadyUsersMustHaveSecrets ==
-  \A u_1304 \in DOMAIN (globalState["users"]):
-    globalState["users"][u_1304]["status"]["conditions"]["status"] = "Ready"
-      => ~(requiresSecret(globalState["users"][u_1304]["spec"]["authentication"]))
-        \/ u_1304 \in globalState["secrets"]
+  \A u_1316 \in DOMAIN (globalState["users"]):
+    globalState["users"][u_1316]["status"]["conditions"]["status"] = "Ready"
+      => ~(requiresSecret(globalState["users"][u_1316]["spec"]["authentication"]))
+        \/ u_1316 \in globalState["secrets"]
 
 (*
   @type: (() => Bool);
 *)
 EventQueueWellFormed ==
   Len(LET (*
-    @type: ((Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })));
+    @type: ((Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })));
   *)
   __QUINT_LAMBDA8(__quint_var0, __QUINT_LAMBDA7) ==
     IF LET (*
-      @type: ((UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => Bool);
+      @type: ((UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => Bool);
     *)
-    __QUINT_LAMBDA6(ev_1345) ==
-      CASE VariantTag(ev_1345) = "UserCreatedWithSecret"
+    __QUINT_LAMBDA6(ev_1357) ==
+      CASE VariantTag(ev_1357) = "UserCreatedWithSecret"
           -> LET (*
-            @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => Bool);
+            @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => Bool);
           *)
-          __QUINT_LAMBDA3(cr_1337) ==
-            cr_1337["metadata"]["name"] \in parameters["potentialUsers"]
+          __QUINT_LAMBDA3(cr_1349) ==
+            cr_1349["metadata"]["name"] \in parameters["potentialUsers"]
           IN
-          __QUINT_LAMBDA3(VariantGetUnsafe("UserCreatedWithSecret", ev_1345))
-        [] VariantTag(ev_1345) = "UserUpdated"
+          __QUINT_LAMBDA3(VariantGetUnsafe("UserCreatedWithSecret", ev_1357))
+        [] VariantTag(ev_1357) = "UserUpdated"
           -> LET (*
-            @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => Bool);
+            @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => Bool);
           *)
-          __QUINT_LAMBDA4(cr_1340) ==
-            cr_1340["metadata"]["name"] \in parameters["potentialUsers"]
+          __QUINT_LAMBDA4(cr_1352) ==
+            cr_1352["metadata"]["name"] \in parameters["potentialUsers"]
           IN
-          __QUINT_LAMBDA4(VariantGetUnsafe("UserUpdated", ev_1345))
-        [] VariantTag(ev_1345) = "UserDeleted"
+          __QUINT_LAMBDA4(VariantGetUnsafe("UserUpdated", ev_1357))
+        [] VariantTag(ev_1357) = "UserDeleted"
           -> LET (*
             @type: ((Str) => Bool);
           *)
-          __QUINT_LAMBDA5(u_1343) == u_1343 \in parameters["potentialUsers"]
+          __QUINT_LAMBDA5(u_1355) == u_1355 \in parameters["potentialUsers"]
           IN
-          __QUINT_LAMBDA5(VariantGetUnsafe("UserDeleted", ev_1345))
+          __QUINT_LAMBDA5(VariantGetUnsafe("UserDeleted", ev_1357))
     IN
     __QUINT_LAMBDA6(__QUINT_LAMBDA7)
     THEN Append(__quint_var0, __QUINT_LAMBDA7)
@@ -381,13 +379,13 @@ EventQueueWellFormed ==
   @type: (() => Bool);
 *)
 QuotasNonNegative ==
-  \A u_1414 \in DOMAIN (globalState["users"]):
-    ((globalState["users"][u_1414]["spec"]["quotas"]["producerByteRate"] >= 0
-          /\ globalState["users"][u_1414]["spec"]["quotas"]["consumerByteRate"]
+  \A u_1426 \in DOMAIN (globalState["users"]):
+    ((globalState["users"][u_1426]["spec"]["quotas"]["producerByteRate"] >= 0
+          /\ globalState["users"][u_1426]["spec"]["quotas"]["consumerByteRate"]
             >= 0)
-        /\ globalState["users"][u_1414]["spec"]["quotas"]["requestPercentage"]
+        /\ globalState["users"][u_1426]["spec"]["quotas"]["requestPercentage"]
           >= 0)
-      /\ globalState["users"][u_1414]["spec"]["quotas"][
+      /\ globalState["users"][u_1426]["spec"]["quotas"][
         "controllerMutationRate"
       ]
         >= 0
@@ -396,30 +394,30 @@ QuotasNonNegative ==
   @type: (() => Bool);
 *)
 QuotasRequestPercentageValid ==
-  \A u_1449 \in DOMAIN (globalState["users"]):
-    globalState["users"][u_1449]["spec"]["quotas"]["requestPercentage"] >= 0
-      /\ globalState["users"][u_1449]["spec"]["quotas"]["requestPercentage"]
+  \A u_1461 \in DOMAIN (globalState["users"]):
+    globalState["users"][u_1461]["spec"]["quotas"]["requestPercentage"] >= 0
+      /\ globalState["users"][u_1461]["spec"]["quotas"]["requestPercentage"]
         <= 100
 
 (*
   @type: (() => Bool);
 *)
 ReadyUsersQuotasValid ==
-  \A u_1540 \in DOMAIN (globalState["users"]):
-    globalState["users"][u_1540]["status"]["conditions"]["status"] = "Ready"
-      => (((globalState["users"][u_1540]["spec"]["quotas"]["producerByteRate"]
+  \A u_1552 \in DOMAIN (globalState["users"]):
+    globalState["users"][u_1552]["status"]["conditions"]["status"] = "Ready"
+      => (((globalState["users"][u_1552]["spec"]["quotas"]["producerByteRate"]
                 >= 0
-              /\ globalState["users"][u_1540]["spec"]["quotas"][
+              /\ globalState["users"][u_1552]["spec"]["quotas"][
                 "consumerByteRate"
               ]
                 >= 0)
-            /\ globalState["users"][u_1540]["spec"]["quotas"][
+            /\ globalState["users"][u_1552]["spec"]["quotas"][
               "requestPercentage"
             ]
               >= 0)
-          /\ globalState["users"][u_1540]["spec"]["quotas"]["requestPercentage"]
+          /\ globalState["users"][u_1552]["spec"]["quotas"]["requestPercentage"]
             <= 100)
-        /\ globalState["users"][u_1540]["spec"]["quotas"][
+        /\ globalState["users"][u_1552]["spec"]["quotas"][
           "controllerMutationRate"
         ]
           >= 0
@@ -428,50 +426,50 @@ ReadyUsersQuotasValid ==
   @type: (() => Bool);
 *)
 AuthenticationPresent ==
-  \A u_1570 \in DOMAIN (globalState["users"]):
-    CASE VariantTag(globalState["users"][u_1570]["spec"]["authentication"])
+  \A u_1582 \in DOMAIN (globalState["users"]):
+    CASE VariantTag(globalState["users"][u_1582]["spec"]["authentication"])
         = "ScramSha512Authentication"
         -> LET (*
-          @type: (({ optional: Bool, secretKey: Str, secretName: Str }) => Bool);
+          @type: (({ useDesiredPassword: Bool }) => Bool);
         *)
-        __QUINT_LAMBDA9(id__1562) == TRUE
+        __QUINT_LAMBDA9(id__1574) == TRUE
         IN
         __QUINT_LAMBDA9(VariantGetUnsafe("ScramSha512Authentication", globalState[
           "users"
         ][
-          u_1570
+          u_1582
         ][
           "spec"
         ][
           "authentication"
         ]))
-      [] VariantTag(globalState["users"][u_1570]["spec"]["authentication"])
+      [] VariantTag(globalState["users"][u_1582]["spec"]["authentication"])
         = "TlsAuthentication"
         -> LET (*
           @type: (({ enabled: Bool }) => Bool);
         *)
-        __QUINT_LAMBDA10(id__1565) == TRUE
+        __QUINT_LAMBDA10(id__1577) == TRUE
         IN
         __QUINT_LAMBDA10(VariantGetUnsafe("TlsAuthentication", globalState[
           "users"
         ][
-          u_1570
+          u_1582
         ][
           "spec"
         ][
           "authentication"
         ]))
-      [] VariantTag(globalState["users"][u_1570]["spec"]["authentication"])
+      [] VariantTag(globalState["users"][u_1582]["spec"]["authentication"])
         = "NoneAuthentication"
         -> LET (*
           @type: (({ tag: Str }) => Bool);
         *)
-        __QUINT_LAMBDA11(id__1568) == TRUE
+        __QUINT_LAMBDA11(id__1580) == TRUE
         IN
         __QUINT_LAMBDA11(VariantGetUnsafe("NoneAuthentication", globalState[
           "users"
         ][
-          u_1570
+          u_1582
         ][
           "spec"
         ][
@@ -482,32 +480,32 @@ AuthenticationPresent ==
   @type: (() => Bool);
 *)
 ACLsExistForAuthorizedUsers ==
-  \A u_1625 \in DOMAIN (globalState["users"]):
-    globalState["users"][u_1625]["spec"]["authorization"]["typeAuthz"]
+  \A u_1637 \in DOMAIN (globalState["users"]):
+    globalState["users"][u_1637]["spec"]["authorization"]["typeAuthz"]
       = "simple"
-      => (\A rule_1622 \in globalState["users"][u_1625]["spec"]["authorization"][
+      => (\A rule_1634 \in globalState["users"][u_1637]["spec"]["authorization"][
         "acls"
       ]:
-        (rule_1622["resource"]["name"] /= "" /\ rule_1622["host"] /= "")
-          /\ rule_1622["kind"] = "allow")
+        (rule_1634["resource"]["name"] /= "" /\ rule_1634["host"] /= "")
+          /\ rule_1634["kind"] = "allow")
 
 (*
   @type: (() => Bool);
 *)
 NoACLsForDeletedUsers ==
-  \A u_1660 \in DOMAIN (globalState["users"]):
-    globalState["users"][u_1660]["status"]["conditions"]["status"] = "Deleted"
-      => globalState["users"][u_1660]["spec"]["authorization"]["acls"] = {}
+  \A u_1672 \in DOMAIN (globalState["users"]):
+    globalState["users"][u_1672]["status"]["conditions"]["status"] = "Deleted"
+      => globalState["users"][u_1672]["spec"]["authorization"]["acls"] = {}
 
 (*
   @type: (() => Bool);
 *)
 ReadyUsersMustHaveACLs ==
-  \A u_1710 \in DOMAIN (globalState["users"]):
-    globalState["users"][u_1710]["status"]["conditions"]["status"] = "Ready"
-      /\ globalState["users"][u_1710]["spec"]["authorization"]["typeAuthz"]
+  \A u_1722 \in DOMAIN (globalState["users"]):
+    globalState["users"][u_1722]["status"]["conditions"]["status"] = "Ready"
+      /\ globalState["users"][u_1722]["spec"]["authorization"]["typeAuthz"]
         = "simple"
-      => Cardinality(globalState["users"][u_1710]["spec"]["authorization"][
+      => Cardinality(globalState["users"][u_1722]["spec"]["authorization"][
         "acls"
       ])
         > 0
@@ -522,7 +520,8 @@ init ==
           potentialUsers |-> { "Alice", "Bob", "Carol" },
           maxProcessedEvents |-> 1000,
           authTypes |-> { "scram-sha-512", "tls", "none" },
-          quotasEnabled |-> { TRUE, FALSE }])
+          quotasEnabled |-> { TRUE, FALSE },
+          useDesiredPassword |-> { TRUE, FALSE }])
     /\ globalState
       = [users |-> SetAsFun({}),
         secrets |-> {},
@@ -530,12 +529,12 @@ init ==
         processedEvents |-> 0]
 
 (*
-  @type: ((UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
+  @type: ((UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
 *)
-queueEvent(ev_303) ==
+queueEvent(ev_307) ==
   [
     globalState EXCEPT
-      !["eventQueue"] = Append(globalState["eventQueue"], ev_303)
+      !["eventQueue"] = Append(globalState["eventQueue"], ev_307)
   ]
 
 (*
@@ -550,73 +549,73 @@ makeAuthz(enable_442, t_442) ==
   @type: (() => Bool);
 *)
 NoStateChangeForPausedUsers ==
-  \A u_1738 \in DOMAIN (globalState["users"]):
-    reconciliationPaused(globalState["users"][u_1738])
-      => globalState["users"][u_1738]["status"]["conditions"]["status"]
+  \A u_1750 \in DOMAIN (globalState["users"]):
+    reconciliationPaused(globalState["users"][u_1750])
+      => globalState["users"][u_1750]["status"]["conditions"]["status"]
         /= "Ready"
 
 (*
-  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }, UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
+  @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }, UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
 *)
-reconcileUser(user_865, ev_865) ==
-  CASE VariantTag(ev_865) = "UserCreatedWithSecret"
+reconcileUser(user_877, ev_877) ==
+  CASE VariantTag(ev_877) = "UserCreatedWithSecret"
       -> LET (*
-        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
+        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
       *)
-      __QUINT_LAMBDA12(cr_857) ==
-        IF user_865["status"]["conditions"]["status"] = "Deleted"
-        THEN [metadata |-> cr_857["metadata"],
-          spec |-> cr_857["spec"],
+      __QUINT_LAMBDA12(cr_869) ==
+        IF user_877["status"]["conditions"]["status"] = "Deleted"
+        THEN [metadata |-> cr_869["metadata"],
+          spec |-> cr_869["spec"],
           status |-> [conditions |-> [status |-> "Pending"]]]
-        ELSE IF reconciliationPaused(cr_857)
-        THEN user_865
-        ELSE [metadata |-> cr_857["metadata"],
-          spec |-> cr_857["spec"],
+        ELSE IF reconciliationPaused(cr_869)
+        THEN user_877
+        ELSE [metadata |-> cr_869["metadata"],
+          spec |-> cr_869["spec"],
           status |-> [conditions |-> [status |-> "Ready"]]]
       IN
-      __QUINT_LAMBDA12(VariantGetUnsafe("UserCreatedWithSecret", ev_865))
-    [] VariantTag(ev_865) = "UserUpdated"
+      __QUINT_LAMBDA12(VariantGetUnsafe("UserCreatedWithSecret", ev_877))
+    [] VariantTag(ev_877) = "UserUpdated"
       -> LET (*
-        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
+        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
       *)
-      __QUINT_LAMBDA13(cr_860) ==
-        IF user_865["status"]["conditions"]["status"] = "Deleted"
-          \/ reconciliationPaused(cr_860)
-        THEN user_865
-        ELSE [metadata |-> cr_860["metadata"],
-          spec |-> cr_860["spec"],
+      __QUINT_LAMBDA13(cr_872) ==
+        IF user_877["status"]["conditions"]["status"] = "Deleted"
+          \/ reconciliationPaused(cr_872)
+        THEN user_877
+        ELSE [metadata |-> cr_872["metadata"],
+          spec |-> cr_872["spec"],
           status |->
             [conditions |->
                 [status |->
-                    IF requiresSecret(cr_860["spec"]["authentication"])
-                    THEN IF cr_860["metadata"]["name"]
+                    IF requiresSecret(cr_872["spec"]["authentication"])
+                    THEN IF cr_872["metadata"]["name"]
                       \in globalState["secrets"]
                     THEN "Ready"
                     ELSE "Pending"
                     ELSE "Ready"]]]
       IN
-      __QUINT_LAMBDA13(VariantGetUnsafe("UserUpdated", ev_865))
-    [] VariantTag(ev_865) = "UserDeleted"
+      __QUINT_LAMBDA13(VariantGetUnsafe("UserUpdated", ev_877))
+    [] VariantTag(ev_877) = "UserDeleted"
       -> LET (*
-        @type: ((Str) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
+        @type: ((Str) => { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } });
       *)
-      __QUINT_LAMBDA14(username_863) ==
-        [metadata |-> user_865["metadata"],
+      __QUINT_LAMBDA14(username_875) ==
+        [metadata |-> user_877["metadata"],
           spec |->
             [
-              user_865["spec"] EXCEPT
+              user_877["spec"] EXCEPT
                 !["authorization"] = [typeAuthz |-> "disabled", acls |-> {}]
             ],
           status |-> [conditions |-> [status |-> "Deleted"]]]
       IN
-      __QUINT_LAMBDA14(VariantGetUnsafe("UserDeleted", ev_865))
+      __QUINT_LAMBDA14(VariantGetUnsafe("UserDeleted", ev_877))
 
 (*
   @type: ((Str) => Bool);
 *)
-deleteUser(u_583) ==
-  (IF u_583 \in DOMAIN (globalState["users"])
-    THEN globalState' := (queueEvent((UserDeleted(u_583))))
+deleteUser(u_595) ==
+  (IF u_595 \in DOMAIN (globalState["users"])
+    THEN globalState' := (queueEvent((UserDeleted(u_595))))
     ELSE globalState' := globalState)
 
 (*
@@ -625,25 +624,25 @@ deleteUser(u_583) ==
 q_init == init
 
 (*
-  @type: (({ eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) }, UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }), Conflict({ tag: Str }) | Gone({ tag: Str }) | None({ tag: Str }) | Pause({ tag: Str }) | ServerError({ tag: Str })) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
+  @type: (({ eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) }, UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }), Conflict({ tag: Str }) | Gone({ tag: Str }) | None({ tag: Str }) | Pause({ tag: Str }) | ServerError({ tag: Str })) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
 *)
-processEvent(state_1140, ev_1140, fault_1140) ==
-  IF shouldSkipReconcile(fault_1140)
+processEvent(state_1152, ev_1152, fault_1152) ==
+  IF shouldSkipReconcile(fault_1152)
   THEN [
-    state_1140 EXCEPT
-      !["processedEvents"] = state_1140["processedEvents"] + 1
+    state_1152 EXCEPT
+      !["processedEvents"] = state_1152["processedEvents"] + 1
   ]
-  ELSE CASE VariantTag(ev_1140) = "UserCreatedWithSecret"
+  ELSE CASE VariantTag(ev_1152) = "UserCreatedWithSecret"
       -> LET (*
-        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
+        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
       *)
-      __QUINT_LAMBDA15(cr_1131) ==
-        IF cr_1131["metadata"]["name"] \in DOMAIN (state_1140["users"])
+      __QUINT_LAMBDA15(cr_1143) ==
+        IF cr_1143["metadata"]["name"] \in DOMAIN (state_1152["users"])
         THEN [users |->
             LET (*
-              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
+              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
             *)
-            __quint_var1 == state_1140["users"]
+            __quint_var1 == state_1152["users"]
             IN
             LET (*
               @type: (() => Set(Str));
@@ -651,24 +650,24 @@ processEvent(state_1140, ev_1140, fault_1140) ==
             __quint_var2 == DOMAIN __quint_var1
             IN
             [
-              __quint_var3 \in {cr_1131["metadata"]["name"]} \union __quint_var2 |->
-                IF __quint_var3 = cr_1131["metadata"]["name"]
-                THEN reconcileUser(state_1140["users"][
-                  cr_1131["metadata"]["name"]
-                ], ev_1140)
+              __quint_var3 \in {cr_1143["metadata"]["name"]} \union __quint_var2 |->
+                IF __quint_var3 = cr_1143["metadata"]["name"]
+                THEN reconcileUser(state_1152["users"][
+                  cr_1143["metadata"]["name"]
+                ], ev_1152)
                 ELSE (__quint_var1)[__quint_var3]
             ],
           secrets |->
-            IF requiresSecret(cr_1131["spec"]["authentication"])
-            THEN state_1140["secrets"] \union {cr_1131["metadata"]["name"]}
-            ELSE state_1140["secrets"],
-          eventQueue |-> state_1140["eventQueue"],
-          processedEvents |-> state_1140["processedEvents"] + 1]
+            IF requiresSecret(cr_1143["spec"]["authentication"])
+            THEN state_1152["secrets"] \union {cr_1143["metadata"]["name"]}
+            ELSE state_1152["secrets"],
+          eventQueue |-> state_1152["eventQueue"],
+          processedEvents |-> state_1152["processedEvents"] + 1]
         ELSE [users |->
             LET (*
-              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
+              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
             *)
-            __quint_var4 == state_1140["users"]
+            __quint_var4 == state_1152["users"]
             IN
             LET (*
               @type: (() => Set(Str));
@@ -676,30 +675,30 @@ processEvent(state_1140, ev_1140, fault_1140) ==
             __quint_var5 == DOMAIN __quint_var4
             IN
             [
-              __quint_var6 \in {cr_1131["metadata"]["name"]} \union __quint_var5 |->
-                IF __quint_var6 = cr_1131["metadata"]["name"]
-                THEN reconcileUser(cr_1131, ev_1140)
+              __quint_var6 \in {cr_1143["metadata"]["name"]} \union __quint_var5 |->
+                IF __quint_var6 = cr_1143["metadata"]["name"]
+                THEN reconcileUser(cr_1143, ev_1152)
                 ELSE (__quint_var4)[__quint_var6]
             ],
           secrets |->
-            IF requiresSecret(cr_1131["spec"]["authentication"])
-            THEN state_1140["secrets"] \union {cr_1131["metadata"]["name"]}
-            ELSE state_1140["secrets"],
-          eventQueue |-> state_1140["eventQueue"],
-          processedEvents |-> state_1140["processedEvents"] + 1]
+            IF requiresSecret(cr_1143["spec"]["authentication"])
+            THEN state_1152["secrets"] \union {cr_1143["metadata"]["name"]}
+            ELSE state_1152["secrets"],
+          eventQueue |-> state_1152["eventQueue"],
+          processedEvents |-> state_1152["processedEvents"] + 1]
       IN
-      __QUINT_LAMBDA15(VariantGetUnsafe("UserCreatedWithSecret", ev_1140))
-    [] VariantTag(ev_1140) = "UserUpdated"
+      __QUINT_LAMBDA15(VariantGetUnsafe("UserCreatedWithSecret", ev_1152))
+    [] VariantTag(ev_1152) = "UserUpdated"
       -> LET (*
-        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
+        @type: (({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
       *)
-      __QUINT_LAMBDA16(cr_1134) ==
-        IF cr_1134["metadata"]["name"] \in DOMAIN (state_1140["users"])
+      __QUINT_LAMBDA16(cr_1146) ==
+        IF cr_1146["metadata"]["name"] \in DOMAIN (state_1152["users"])
         THEN [users |->
             LET (*
-              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
+              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
             *)
-            __quint_var7 == state_1140["users"]
+            __quint_var7 == state_1152["users"]
             IN
             LET (*
               @type: (() => Set(Str));
@@ -707,41 +706,41 @@ processEvent(state_1140, ev_1140, fault_1140) ==
             __quint_var8 == DOMAIN __quint_var7
             IN
             [
-              __quint_var9 \in {cr_1134["metadata"]["name"]} \union __quint_var8 |->
-                IF __quint_var9 = cr_1134["metadata"]["name"]
-                THEN reconcileUser(state_1140["users"][
-                  cr_1134["metadata"]["name"]
-                ], ev_1140)
+              __quint_var9 \in {cr_1146["metadata"]["name"]} \union __quint_var8 |->
+                IF __quint_var9 = cr_1146["metadata"]["name"]
+                THEN reconcileUser(state_1152["users"][
+                  cr_1146["metadata"]["name"]
+                ], ev_1152)
                 ELSE (__quint_var7)[__quint_var9]
             ],
           secrets |->
-            IF state_1140["users"][cr_1134["metadata"]["name"]]["status"][
+            IF state_1152["users"][cr_1146["metadata"]["name"]]["status"][
                 "conditions"
               ][
                 "status"
               ]
                 = "Deleted"
-              \/ reconciliationPaused(cr_1134)
-            THEN state_1140["secrets"]
-            ELSE IF requiresSecret(cr_1134["spec"]["authentication"])
-            THEN state_1140["secrets"] \union {cr_1134["metadata"]["name"]}
-            ELSE state_1140["secrets"] \ {cr_1134["metadata"]["name"]},
-          eventQueue |-> state_1140["eventQueue"],
-          processedEvents |-> state_1140["processedEvents"] + 1]
-        ELSE state_1140
+              \/ reconciliationPaused(cr_1146)
+            THEN state_1152["secrets"]
+            ELSE IF requiresSecret(cr_1146["spec"]["authentication"])
+            THEN state_1152["secrets"] \union {cr_1146["metadata"]["name"]}
+            ELSE state_1152["secrets"] \ {cr_1146["metadata"]["name"]},
+          eventQueue |-> state_1152["eventQueue"],
+          processedEvents |-> state_1152["processedEvents"] + 1]
+        ELSE state_1152
       IN
-      __QUINT_LAMBDA16(VariantGetUnsafe("UserUpdated", ev_1140))
-    [] VariantTag(ev_1140) = "UserDeleted"
+      __QUINT_LAMBDA16(VariantGetUnsafe("UserUpdated", ev_1152))
+    [] VariantTag(ev_1152) = "UserDeleted"
       -> LET (*
-        @type: ((Str) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
+        @type: ((Str) => { eventQueue: Seq(UserCreatedWithSecret({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) | UserDeleted(Str) | UserUpdated({ metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } })), processedEvents: Int, secrets: Set(Str), users: (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }) });
       *)
-      __QUINT_LAMBDA17(username_1137) ==
-        IF username_1137 \in DOMAIN (state_1140["users"])
+      __QUINT_LAMBDA17(username_1149) ==
+        IF username_1149 \in DOMAIN (state_1152["users"])
         THEN [users |->
             LET (*
-              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ optional: Bool, secretKey: Str, secretName: Str }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
+              @type: (() => (Str -> { metadata: { annotations: (Str -> Str), name: Str }, spec: { authentication: NoneAuthentication({ tag: Str }) | ScramSha512Authentication({ useDesiredPassword: Bool }) | TlsAuthentication({ enabled: Bool }), authorization: { acls: Set({ host: Str, kind: Str, operation: All({ tag: Str }) | Alter({ tag: Str }) | AlterConfigs({ tag: Str }) | ClusterAction({ tag: Str }) | Create({ tag: Str }) | Delete({ tag: Str }) | Describe({ tag: Str }) | DescribeConfigs({ tag: Str }) | IdempotentWrite({ tag: Str }) | Read({ tag: Str }) | Write({ tag: Str }), resource: { name: Str, patternType: Literal({ tag: Str }) | Prefix({ tag: Str }), typeAcl: Cluster({ tag: Str }) | Group({ tag: Str }) | Topic({ tag: Str }) | TransactionalId({ tag: Str }) } }), typeAuthz: Str }, quotas: { consumerByteRate: Int, controllerMutationRate: Int, producerByteRate: Int, requestPercentage: Int } }, status: { conditions: { status: Str } } }));
             *)
-            __quint_var10 == state_1140["users"]
+            __quint_var10 == state_1152["users"]
             IN
             LET (*
               @type: (() => Set(Str));
@@ -749,75 +748,77 @@ processEvent(state_1140, ev_1140, fault_1140) ==
             __quint_var11 == DOMAIN __quint_var10
             IN
             [
-              __quint_var12 \in {username_1137} \union __quint_var11 |->
-                IF __quint_var12 = username_1137
-                THEN reconcileUser(state_1140["users"][username_1137], ev_1140)
+              __quint_var12 \in {username_1149} \union __quint_var11 |->
+                IF __quint_var12 = username_1149
+                THEN reconcileUser(state_1152["users"][username_1149], ev_1152)
                 ELSE (__quint_var10)[__quint_var12]
             ],
-          secrets |-> state_1140["secrets"] \ {username_1137},
-          eventQueue |-> state_1140["eventQueue"],
-          processedEvents |-> state_1140["processedEvents"] + 1]
-        ELSE state_1140
+          secrets |-> state_1152["secrets"] \ {username_1149},
+          eventQueue |-> state_1152["eventQueue"],
+          processedEvents |-> state_1152["processedEvents"] + 1]
+        ELSE state_1152
       IN
-      __QUINT_LAMBDA17(VariantGetUnsafe("UserDeleted", ev_1140))
+      __QUINT_LAMBDA17(VariantGetUnsafe("UserDeleted", ev_1152))
 
 (*
   @type: ((Str, Str, Bool, Bool) => Bool);
 *)
-createUser(u_498, authType_498, quotasEnabled_498, aclsEnabled_498) ==
+createUser(u_504, authType_504, quotasEnabled_504, aclsEnabled_504) ==
   (\E authzParams \in RESOURCE_TYPES \X PATTERNS \X OPS:
-      \E reconciliationPaused_495 \in { TRUE, FALSE }:
-        globalState'
-          := (queueEvent((UserCreatedWithSecret([metadata |->
-              [name |-> u_498,
-                annotations |->
-                  IF reconciliationPaused_495
-                  THEN SetAsFun({<<"strimzi.io/pause-reconciliation", "true">>})
-                  ELSE SetAsFun({})],
-            spec |->
-              [authentication |-> makeAuth(u_498, authType_498),
-                authorization |-> makeAuthz(aclsEnabled_498, authzParams),
-                quotas |-> makeQuotas(quotasEnabled_498)],
-            status |-> [conditions |-> [status |-> "Pending"]]])))))
+      \E reconciliationPaused_501 \in { TRUE, FALSE }:
+        \E useDesiredPassword \in parameters["useDesiredPassword"]:
+          globalState'
+            := (queueEvent((UserCreatedWithSecret([metadata |->
+                [name |-> u_504,
+                  annotations |->
+                    IF reconciliationPaused_501
+                    THEN SetAsFun({<<"strimzi.io/pause-reconciliation", "true">>})
+                    ELSE SetAsFun({})],
+              spec |->
+                [authentication |-> makeAuth(authType_504, useDesiredPassword),
+                  authorization |-> makeAuthz(aclsEnabled_504, authzParams),
+                  quotas |-> makeQuotas(quotasEnabled_504)],
+              status |-> [conditions |-> [status |-> "Pending"]]])))))
 
 (*
   @type: ((Str, Str, Bool, Bool) => Bool);
 *)
-updateUser(u_564, authType_564, quotasEnabled_564, aclsEnabled_564) ==
+updateUser(u_576, authType_576, quotasEnabled_576, aclsEnabled_576) ==
   (\E authzParams \in RESOURCE_TYPES \X PATTERNS \X OPS:
-      \E reconciliationPaused_561 \in { TRUE, FALSE }:
-        IF u_564 \in DOMAIN (globalState["users"])
-        THEN globalState'
-          := (queueEvent((UserUpdated([metadata |->
-              [name |-> u_564,
-                annotations |->
-                  IF reconciliationPaused_561
-                  THEN SetAsFun({<<"strimzi.io/pause-reconciliation", "true">>})
-                  ELSE SetAsFun({})],
-            spec |->
-              [authentication |-> makeAuth(u_564, authType_564),
-                authorization |-> makeAuthz(aclsEnabled_564, authzParams),
-                quotas |-> makeQuotas(quotasEnabled_564)],
-            status |-> [conditions |-> [status |-> "Pending"]]]))))
-        ELSE globalState' := globalState)
+      \E reconciliationPaused_573 \in { TRUE, FALSE }:
+        \E useDesiredPassword \in parameters["useDesiredPassword"]:
+          IF u_576 \in DOMAIN (globalState["users"])
+          THEN globalState'
+            := (queueEvent((UserUpdated([metadata |->
+                [name |-> u_576,
+                  annotations |->
+                    IF reconciliationPaused_573
+                    THEN SetAsFun({<<"strimzi.io/pause-reconciliation", "true">>})
+                    ELSE SetAsFun({})],
+              spec |->
+                [authentication |-> makeAuth(authType_576, useDesiredPassword),
+                  authorization |-> makeAuthz(aclsEnabled_576, authzParams),
+                  quotas |-> makeQuotas(quotasEnabled_576)],
+              status |-> [conditions |-> [status |-> "Pending"]]]))))
+          ELSE globalState' := globalState)
 
 (*
   @type: (() => Bool);
 *)
 FaultsDoNotAffectState ==
-  \A f_1793 \in { (Pause), (Conflict), (Gone), (ServerError) }:
+  \A f_1805 \in { (Pause), (Conflict), (Gone), (ServerError) }:
     Len(globalState["eventQueue"]) > 0
       => (processEvent([
           globalState EXCEPT
             !["eventQueue"] = Tail(globalState["eventQueue"])
-        ], (Head(globalState["eventQueue"])), f_1793))[
+        ], (Head(globalState["eventQueue"])), f_1805))[
           "users"
         ]
           = globalState["users"]
         /\ (processEvent([
           globalState EXCEPT
             !["eventQueue"] = Tail(globalState["eventQueue"])
-        ], (Head(globalState["eventQueue"])), f_1793))[
+        ], (Head(globalState["eventQueue"])), f_1805))[
           "secrets"
         ]
           = globalState["secrets"]
@@ -825,13 +826,13 @@ FaultsDoNotAffectState ==
 (*
   @type: ((Conflict({ tag: Str }) | Gone({ tag: Str }) | None({ tag: Str }) | Pause({ tag: Str }) | ServerError({ tag: Str })) => Bool);
 *)
-processNextEvent(fault_612) ==
+processNextEvent(fault_624) ==
   (IF Len(globalState["eventQueue"]) > 0
     THEN globalState'
       := (processEvent([
         globalState EXCEPT
           !["eventQueue"] = Tail(globalState["eventQueue"])
-      ], (Head(globalState["eventQueue"])), fault_612))
+      ], (Head(globalState["eventQueue"])), fault_624))
     ELSE globalState' := globalState)
 
 (*

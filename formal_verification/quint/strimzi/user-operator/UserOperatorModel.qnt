@@ -13,7 +13,7 @@ module UserOperatorModel {
   }
 
   type KafkaUserAuthentication =
-    | ScramSha512Authentication({ secretName: str, secretKey: str, optional: bool })
+    | ScramSha512Authentication({ useDesiredPassword: bool })
     | TlsAuthentication({ enabled: bool })
     | NoneAuthentication          // no authentication configured :)
 
@@ -124,7 +124,8 @@ module UserOperatorModel {
     potentialUsers : Set[str],
     maxProcessedEvents: int,
     authTypes: Set[str],
-    quotasEnabled: Set[bool]
+    quotasEnabled: Set[bool],
+    useDesiredPassword: Set[bool]
   }
 
   // ============================================================================
@@ -140,7 +141,8 @@ module UserOperatorModel {
         potentialUsers : Set("Alice", "Bob", "Carol"),
         maxProcessedEvents : 1000,
         authTypes: Set("scram-sha-512", "tls", "none"),
-        quotasEnabled: Set(true, false)
+        quotasEnabled: Set(true, false),
+        useDesiredPassword: Set(true, false)
     },
     globalState' = { 
       users: Map(), 
@@ -165,13 +167,9 @@ module UserOperatorModel {
   def queueEvent(ev: Event): GlobalState =
     { ...globalState, eventQueue: globalState.eventQueue.append(ev) }
 
-  def makeAuth(u: str, authType: str): KafkaUserAuthentication =
+  def makeAuth(authType: str, useDesiredPassword: bool): KafkaUserAuthentication =
     if (authType == "scram-sha-512")
-      ScramSha512Authentication({
-        secretName: u,
-        secretKey: "my-password",
-        optional: false
-      })
+     ScramSha512Authentication({ useDesiredPassword : useDesiredPassword })
     else if (authType == "tls")
       TlsAuthentication({ enabled: true })
     else
@@ -224,6 +222,7 @@ module UserOperatorModel {
   action createUser(u, authType, quotasEnabled, aclsEnabled) = all {
      nondet authzParams = tuples(RESOURCE_TYPES, PATTERNS, OPS).oneOf()
      nondet reconciliationPaused = Set(true, false).oneOf()
+     nondet useDesiredPassword = parameters.useDesiredPassword.oneOf()
 
      globalState' = queueEvent(
       UserCreatedWithSecret({
@@ -232,7 +231,7 @@ module UserOperatorModel {
           annotations: if (reconciliationPaused) Map("strimzi.io/pause-reconciliation" -> "true") else Map()
         },
         spec: {
-          authentication: makeAuth(u, authType),
+          authentication: makeAuth(authType, useDesiredPassword),
           authorization: makeAuthz(aclsEnabled, authzParams),
           quotas: makeQuotas(quotasEnabled)
         },
@@ -244,6 +243,7 @@ module UserOperatorModel {
   action updateUser(u, authType, quotasEnabled, aclsEnabled) = all {
     nondet authzParams = tuples(RESOURCE_TYPES, PATTERNS, OPS).oneOf()
     nondet reconciliationPaused = Set(true, false).oneOf()
+    nondet useDesiredPassword = parameters.useDesiredPassword.oneOf()
 
     if (u.in(globalState.users.keys())) {
       globalState' = queueEvent(
@@ -253,7 +253,7 @@ module UserOperatorModel {
             annotations: if (reconciliationPaused) Map("strimzi.io/pause-reconciliation" -> "true") else Map()
           },
           spec: {
-            authentication: makeAuth(u, authType),
+            authentication: makeAuth(authType, useDesiredPassword),
             authorization: makeAuthz(aclsEnabled, authzParams),
             quotas: makeQuotas(quotasEnabled)
           },
@@ -580,7 +580,7 @@ module UserOperatorModel {
   // q::debug is not compatible with the TLA+ transpilation => workaround
   //    i.)     debug with verifying Apalache        => q::debug(s,a)
   //    ii.)    debug with TLC (liveness properties) => a
-  pure def debug(s, a) = a
+  pure def debug(s, a) = q::debug(s,a)
 
   val AllInvariantsHold = and {
       if (UserConsistency) true else debug("UserConsistency", false),
