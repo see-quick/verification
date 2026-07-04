@@ -1,0 +1,1523 @@
+An example execution:
+
+[State 0]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 1]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((2, 2)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 2]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 2)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 3]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 2)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 4]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 2,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 2)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 5]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 3,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 2)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 6]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 4,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 2)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 7]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 4,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 8]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 5,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 9]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 5,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 10]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 6,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 11]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> CANDIDATE),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> 2),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 6,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 12]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> CANDIDATE),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> 2),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 7,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 13]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> CANDIDATE),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> 2),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 8,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 14]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> CANDIDATE),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> 2),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 8,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 15]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 2,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> CANDIDATE, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> 0, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 8,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 8, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 16]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 2,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> CANDIDATE, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> 0, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 8,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 8, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 17]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 2,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> CANDIDATE, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> 0, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 9,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 8, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 18]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 2,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> CANDIDATE, 1 -> FOLLOWER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> 0, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 9,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 8, 1 -> 0, 2 -> 6),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((0, 1), (1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 19]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 3,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> FOLLOWER, 2 -> CANDIDATE),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> -1, 2 -> 2),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 9,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 8, 1 -> 0, 2 -> 9),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((0, 1), (1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 20]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 4,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> CANDIDATE, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> -1, 1 -> 1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 9,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 8, 1 -> 9, 2 -> 9),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((0, 1), (1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 21]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 4,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: -1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> CANDIDATE, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> 1, 1 -> 1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 9,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 9, 1 -> 9, 2 -> 9),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((0, 1), (1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[State 22]
+{
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokerMetadataOffset:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::brokers:
+    Map(
+      0 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 0,
+          registrationState: UNREGISTERED
+        },
+      1 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 1,
+          registrationState: UNREGISTERED
+        },
+      2 ->
+        {
+          controlState: FENCED,
+          epoch: 0,
+          fenced: true,
+          incarnationId: 2,
+          registrationState: UNREGISTERED
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controlledShutdownOffset:
+    Map(0 -> -1, 1 -> -1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerEpoch: 4,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerLeader: 1,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerRole:
+    Map(0 -> FOLLOWER, 1 -> LEADER, 2 -> FOLLOWER),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::controllerVotedFor:
+    Map(0 -> 1, 1 -> 1, 2 -> -1),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::currentTime: 9,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::inFlightMessages:
+    Set(),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastControllerHeartbeat:
+    Map(0 -> 9, 1 -> 9, 2 -> 9),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::lastHeartbeat:
+    Map(0 -> 0, 1 -> 0, 2 -> 0),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::metadataHighWatermark:
+    0,
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::networkPartitioned:
+    Set((0, 1), (1, 0), (2, 1)),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::partitions:
+    Map(
+      0 ->
+        {
+          addingReplicas: Set(),
+          isr: Set(),
+          leader: -1,
+          leaderEpoch: 0,
+          removingReplicas: Set(),
+          replicas: Set()
+        }
+    ),
+  BrokerHeartbeatEnhanced_Small::BrokerHeartbeatEnhanced::pendingShutdown:
+    Map(0 -> false, 1 -> false, 2 -> false)
+}
+
+[violation] Found an issue (25ms at 40 traces/second).
+Use --verbosity=3 to show executions.
+Use --seed=0xc45cf882969ad --backend=typescript to reproduce.
