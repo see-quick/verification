@@ -1,14 +1,16 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MemoryIntensiveExample {
     public static void main(String[] args) {
-        List<int[]> bigList = new ArrayList<>();
-        for (int i = 0; i < 10_000; i++) {
-            bigList.add(new int[1_000_000]); // Allocate large arrays
-            System.out.println("Allocated " + (i + 1) + "MB");
+        long total = 0;
+        for (int i = 0; i < 5_000_000; i++) {
+            Map<String, String> map = new HashMap<>();
+            map.put("key-" + i, "value-" + i);
+            total += map.get("key-" + i).length();
         }
+        System.out.println("Total: " + total);
     }
 }

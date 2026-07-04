@@ -2,21 +2,33 @@ package org.example;
 
 public class ThreadContentionExample {
     private static final Object LOCK = new Object();
+    private static long sharedCounter = 0;
 
-    public static void main(String[] args) {
-        for (int i = 0; i < 10; i++) {
-            new Thread(ThreadContentionExample::criticalSection).start();
+    public static void main(String[] args) throws InterruptedException {
+        Thread[] threads = new Thread[8];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread(ThreadContentionExample::work);
+            threads[i].start();
+        }
+        for (Thread t : threads) {
+            t.join();
+        }
+        System.out.println("Counter: " + sharedCounter);
+    }
+
+    private static void work() {
+        for (int i = 0; i < 1_000_000; i++) {
+            synchronized (LOCK) {
+                sharedCounter++;
+                busyWork();
+            }
         }
     }
 
-    private static void criticalSection() {
-        synchronized (LOCK) {
-            try {
-                Thread.sleep(1000); // Simulate work in critical section
-                System.out.println(Thread.currentThread().getName() + " completed work.");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+    private static void busyWork() {
+        double x = 1.0;
+        for (int i = 0; i < 50; i++) {
+            x = Math.sin(x) + Math.cos(x);
         }
     }
 }
